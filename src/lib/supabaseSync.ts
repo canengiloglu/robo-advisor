@@ -1,8 +1,6 @@
 import { supabase } from './supabase'
 import type { StoredAsset, RebalanceRecord } from '../store/portfolioStore'
 
-const PORTFOLIO_ID = 'default'
-
 interface SyncState {
   assets: StoredAsset[]
   history: RebalanceRecord[]
@@ -12,91 +10,83 @@ interface SyncState {
 }
 
 export async function syncToSupabase(state: SyncState) {
-  if (!supabase) {
-    console.warn('Supabase not initialized — skipping sync')
-    return
-  }
+  if (!supabase) return
 
-  console.log('Starting sync...')
-
-  const { data: pData, error: pError } = await supabase
+  // 1. Önce portfolyo upsert et
+  const { error: pError } = await supabase
     .from('portfolios')
     .upsert({
-      id: PORTFOLIO_ID,
+      id: 'default',
       name: 'Ana Portföy',
       monthly_added: state.monthlyAdded,
       monthly_added_month: state.monthlyAddedMonth,
       last_price_update: state.lastPriceUpdate,
       updated_at: new Date().toISOString(),
     })
-  console.log('Portfolio sync:', pData, pError)
+  if (pError) { console.error('Portfolio sync error:', pError); return }
 
+  // 2. Varlıkları upsert et
   const assetsToSync = state.assets.map((a) => ({
     id: a.id,
-    portfolio_id: PORTFOLIO_ID,
+    portfolio_id: 'default',
     symbol: a.symbol,
     name: a.name,
-    target_weight: a.target_weight,
-    current_value: a.current_value,
+    target_weight: a.target_weight,   // StoredAsset snake_case kullanır
+    current_value: a.current_value,   // StoredAsset snake_case kullanır
     units: a.units ?? null,
-    last_updated: a.lastUpdated ?? null,
+    last_updated: a.lastUpdated
+      ? new Date(a.lastUpdated).toISOString()
+      : null,
   }))
-  console.log('Assets to sync:', assetsToSync)
 
-  const { data: aData, error: aError } = await supabase
+  const { error: aError } = await supabase
     .from('assets')
     .upsert(assetsToSync)
-  console.log('Assets sync:', aData, aError)
+  if (aError) console.error('Assets sync error:', aError)
 
-  if (state.history.length > 0) {
+  // 3. Geçmişi upsert et
+  if (state.history?.length > 0) {
     const historyToSync = state.history.map((h) => ({
       id: h.id,
-      portfolio_id: PORTFOLIO_ID,
+      portfolio_id: 'default',
       cash_added: h.cashAdded,
       portfolio_before: h.portfolioBeforeTotal,
       portfolio_after: h.portfolioAfterTotal,
       allocations: h.allocations,
-      created_at: h.date,
+      created_at: new Date(h.date).toISOString(),
     }))
-    console.log('History to sync:', historyToSync)
 
-    const { data: hData, error: hError } = await supabase
+    const { error: hError } = await supabase
       .from('rebalance_history')
       .upsert(historyToSync, { onConflict: 'id' })
-    console.log('History sync:', hData, hError)
+    if (hError) console.error('History sync error:', hError)
   }
 }
 
 export async function loadFromSupabase() {
   if (!supabase) return null
 
-  console.log('Loading from Supabase...')
-
   const { data: portfolio, error: pError } = await supabase
     .from('portfolios')
     .select('*')
-    .eq('id', PORTFOLIO_ID)
-    .single()
-  console.log('Portfolio load:', portfolio, pError)
+    .eq('id', 'default')
+    .maybeSingle()
 
-  const { data: assets, error: aError } = await supabase
+  if (pError || !portfolio) return null
+
+  const { data: assets } = await supabase
     .from('assets')
     .select('*')
-    .eq('portfolio_id', PORTFOLIO_ID)
+    .eq('portfolio_id', 'default')
     .order('created_at')
-  console.log('Assets load:', assets, aError)
 
-  const { data: history, error: hError } = await supabase
+  const { data: history } = await supabase
     .from('rebalance_history')
     .select('*')
-    .eq('portfolio_id', PORTFOLIO_ID)
+    .eq('portfolio_id', 'default')
     .order('created_at', { ascending: false })
-  console.log('History load:', history, hError)
 
-  if (!portfolio || !assets || assets.length === 0) {
-    console.log('No data found in Supabase, falling back to localStorage')
-    return null
-  }
+  if (!assets || assets.length === 0) return null
 
   const mappedAssets: StoredAsset[] = assets.map((a) => ({
     id: a.id,
@@ -105,7 +95,7 @@ export async function loadFromSupabase() {
     target_weight: a.target_weight,
     current_value: a.current_value,
     units: a.units ?? null,
-    lastUpdated: a.last_updated ?? undefined,
+    lastUpdated: a.last_updated ? new Date(a.last_updated).getTime() : undefined,
   }))
 
   const mappedHistory: RebalanceRecord[] = (history ?? []).map((h) => ({
@@ -116,8 +106,6 @@ export async function loadFromSupabase() {
     portfolioAfterTotal: h.portfolio_after,
     allocations: h.allocations ?? [],
   }))
-
-  console.log('Supabase load complete:', { assets: mappedAssets.length, history: mappedHistory.length })
 
   return {
     assets: mappedAssets,
