@@ -111,7 +111,7 @@ export async function loadFromSupabase() {
     assets: mappedAssets,
     history: mappedHistory,
     monthlyAdded: portfolio.monthly_added ?? 0,
-    monthlyAddedMonth: portfolio.monthly_added_month ?? new Date().toISOString().slice(0, 7),
+    monthlyAddedMonth: portfolio.monthly_added_month ?? '',
     lastPriceUpdate: portfolio.last_price_update ?? null,
   }
 }
