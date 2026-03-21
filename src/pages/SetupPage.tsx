@@ -171,11 +171,13 @@ function Step1({ onNext }: { onNext: () => void }) {
 }
 
 function Step2({
-  assets, values, onChange, onNext, onBack,
+  assets, values, onChange, units, onUnitsChange, onNext, onBack,
 }: {
   assets: StoredAsset[];
   values: Record<string, string>;
   onChange: (id: string, val: string) => void;
+  units: Record<string, string>;
+  onUnitsChange: (id: string, val: string) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
@@ -206,16 +208,39 @@ function Step2({
             <div style={{ flex: 1, fontSize: 11, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {a.name}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 11, color: '#475569' }}>₺</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 11, color: '#475569' }}>₺</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={values[a.id]}
+                  onChange={(e) => onChange(a.id, e.target.value)}
+                  placeholder="0"
+                  style={{
+                    width: 80,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 8,
+                    padding: '5px 8px',
+                    color: '#F8FAFC',
+                    fontSize: 12,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                />
+              </div>
               <input
                 type="number"
                 min={0}
-                value={values[a.id]}
-                onChange={(e) => onChange(a.id, e.target.value)}
-                placeholder="0"
+                value={units[a.id]}
+                onChange={(e) => onUnitsChange(a.id, e.target.value)}
+                placeholder="Pay adedi"
+                title="Pay Adedi (opsiyonel)"
                 style={{
-                  width: 90,
+                  width: 80,
                   background: 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.08)',
                   borderRadius: 8,
@@ -410,6 +435,9 @@ export function SetupPage() {
   const [weights, setWeights] = useState<Record<string, string>>(() =>
     Object.fromEntries(assets.map((a) => [a.id, (a.target_weight * 100).toFixed(1)]))
   );
+  const [units, setUnits] = useState<Record<string, string>>(() =>
+    Object.fromEntries(assets.map((a) => [a.id, a.units ? String(a.units) : '']))
+  );
 
   const totalWeight = assets.reduce((sum, a) => sum + (parseFloat(weights[a.id]) || 0), 0);
   const weightOk = Math.abs(totalWeight - 100) < 0.05;
@@ -420,6 +448,7 @@ export function SetupPage() {
       ...a,
       current_value: parseFloat(values[a.id]) || 0,
       target_weight: (parseFloat(weights[a.id]) || 0) / 100,
+      units: parseFloat(units[a.id]) || null,
     }));
     setAssets(updatedAssets);
     completeOnboarding();
@@ -499,6 +528,8 @@ export function SetupPage() {
                 assets={assets}
                 values={values}
                 onChange={(id, val) => setValues((prev) => ({ ...prev, [id]: val }))}
+                units={units}
+                onUnitsChange={(id, val) => setUnits((prev) => ({ ...prev, [id]: val }))}
                 onNext={() => setStep(3)}
                 onBack={() => setStep(1)}
               />

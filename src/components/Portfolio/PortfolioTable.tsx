@@ -9,7 +9,7 @@ import { useIsMobile } from '../../lib/useIsMobile';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { useT } from '../../hooks/useT';
 
-export const PORTFOLIO_GRID        = '60px 1fr 80px 150px 100px 80px 32px';
+export const PORTFOLIO_GRID        = '60px 1fr 80px 150px 100px 100px 80px 32px';
 export const PORTFOLIO_GRID_MOBILE = '48px 1fr 60px 110px 80px';
 
 const STATUS_COLORS: Record<WeightStatus['type'], string> = {
@@ -26,7 +26,7 @@ function computeTotal(assets: StoredAsset[], drafts: Record<string, string>) {
 }
 
 export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
-  const { assets, updateAssetValue, removeAsset, updateTargetWeight } = usePortfolioStore();
+  const { assets, updateAssetValue, updateAssetUnits, removeAsset, updateTargetWeight } = usePortfolioStore();
   const total = assets.reduce((sum, a) => sum + a.current_value, 0);
   const isMobile = useIsMobile();
   const grid = isMobile ? PORTFOLIO_GRID_MOBILE : PORTFOLIO_GRID;
@@ -96,6 +96,7 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
     { label: t.asset,        align: 'left',   hideOnMobile: false },
     { label: t.target,       align: 'center', hideOnMobile: false },
     { label: t.currentValue, align: 'right',  hideOnMobile: false },
+    { label: 'PAY ADEDİ',   align: 'right',  hideOnMobile: true  },
     { label: t.amount,       align: 'right',  hideOnMobile: false },
     { label: t.lastUpdate,   align: 'right',  hideOnMobile: true  },
     { label: '',             align: 'left',   hideOnMobile: true  },
@@ -186,6 +187,7 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
             key={asset.id}
             asset={asset}
             onValueChange={updateAssetValue}
+            onUnitsChange={updateAssetUnits}
             onRemove={removeAsset}
             grid={grid}
             isMobile={isMobile}
@@ -237,6 +239,7 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
         }}
       >
         <span className="col-span-4" style={{ fontSize: 13, color: c.textDim }}>{t.totalValue}</span>
+        {!isMobile && <span />}
         <span className="text-right tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 15, color: c.textPrimary, fontWeight: 600, letterSpacing: '-0.5px' }}>
           {total > 0 ? fmtTL(total) : <span style={{ color: c.textDisabled }}>—</span>}
         </span>

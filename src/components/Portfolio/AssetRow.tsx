@@ -23,6 +23,7 @@ export interface WeightEditState {
 interface AssetRowProps {
   asset: StoredAsset;
   onValueChange: (id: string, value: number) => void;
+  onUnitsChange: (id: string, units: number | null) => void;
   onRemove: (id: string) => void;
   grid: string;
   isMobile?: boolean;
@@ -55,7 +56,7 @@ const WEIGHT_STYLE: Record<WeightStatus['type'], { border: string; color: string
   ok:      { border: 'rgba(74,222,128,0.4)', color: '#4ADE80' },
 };
 
-export function AssetRow({ asset, onValueChange, onRemove, grid, isMobile = false, weightEdit }: AssetRowProps) {
+export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, isMobile = false, weightEdit }: AssetRowProps) {
   const { isEditing, draft, status, autoFocus, onClick, onChange, onCommit, onCancel } = weightEdit;
   const c = useThemeColors();
   const t = useT();
@@ -156,7 +157,19 @@ export function AssetRow({ asset, onValueChange, onRemove, grid, isMobile = fals
         style={isMobile ? { maxWidth: 120 } : undefined}
       />
 
-      {/* 5. Tutar */}
+      {/* 5. Pay adedi — masaüstünde göster */}
+      {!isMobile && (
+        <input
+          type="number"
+          value={asset.units ?? ''}
+          placeholder="Pay adedi"
+          min={0}
+          onChange={(e) => onUnitsChange(asset.id, e.target.value ? parseFloat(e.target.value) : null)}
+          className="input-field font-mono w-full rounded-lg px-3 py-1.5 text-right text-sm tabular-nums"
+        />
+      )}
+
+      {/* 6. Tutar */}
       <span className="font-mono text-right tabular-nums text-sm font-medium" style={{ color: c.textPrimary }}>
         {asset.current_value > 0 ? fmtTL(asset.current_value) : <span style={{ color: c.textDisabled }}>—</span>}
       </span>

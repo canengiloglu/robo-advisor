@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { usePortfolioStore } from '../store/portfolioStore';
 import type { StoredAsset } from '../store/portfolioStore';
@@ -96,7 +96,16 @@ function IconBtn({ onClick, title, children }: { onClick: () => void; title?: st
 
 export function Dashboard() {
   useDailyPriceUpdate();
-  const { assets, resetToDefaults, lastResult, monthlyAdded, monthlyAddedMonth } = usePortfolioStore();
+  const { assets, resetToDefaults, lastResult, monthlyAdded, monthlyAddedMonth, priceUpdateStatus } = usePortfolioStore();
+  const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    if (priceUpdateStatus === 'failed') {
+      setToastVisible(true);
+      const timer = setTimeout(() => setToastVisible(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [priceUpdateStatus]);
   const { theme, language, toggleTheme, toggleLanguage } = useSettingsStore();
   const c = useThemeColors();
   const t = useT();
@@ -153,6 +162,16 @@ export function Dashboard() {
           {/* Sağ: Badge + toggles + reset */}
           <div className="flex items-center gap-2">
             {lastUpdated && <LastUpdatedHeader ts={lastUpdated} />}
+            {priceUpdateStatus === 'success' && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#4ADE80', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)' }}>
+                ↻ Fiyatlar güncellendi
+              </span>
+            )}
+            {(priceUpdateStatus === 'failed' || priceUpdateStatus === 'partial') && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#FBBF24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)' }}>
+                ⚠ {priceUpdateStatus === 'failed' ? 'Fiyat güncelleme başarısız' : 'Bazı fiyatlar güncellenemedi'}
+              </span>
+            )}
             <span
               className="inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1"
               style={{
@@ -358,6 +377,26 @@ export function Dashboard() {
       </footer>
 
       <AddAssetModal open={addModalOpen} onClose={() => setAddModalOpen(false)} />
+
+      {/* Toast bildirimi */}
+      {toastVisible && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg"
+          style={{
+            background: 'rgba(30,25,10,0.95)',
+            border: '1px solid rgba(251,191,36,0.35)',
+            color: '#FBBF24',
+            fontSize: 13,
+            fontWeight: 500,
+            backdropFilter: 'blur(12px)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span>⚠</span>
+          <span>Fiyatlar güncellenemedi — borsa kapalı olabilir. Değerleri manuel güncelleyebilirsiniz.</span>
+          <button onClick={() => setToastVisible(false)} style={{ marginLeft: 8, opacity: 0.6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 14 }}>✕</button>
+        </div>
+      )}
     </div>
   );
 }

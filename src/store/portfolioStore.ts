@@ -40,11 +40,14 @@ interface PortfolioStore {
   monthlyAddedMonth: string;
   history: RebalanceRecord[];
   lastPriceUpdate: string | null;
+  priceUpdateStatus: 'idle' | 'success' | 'partial' | 'failed';
 
   setLastPriceUpdate: (date: string) => void;
+  setPriceUpdateStatus: (status: 'idle' | 'success' | 'partial' | 'failed') => void;
   setAssets: (assets: StoredAsset[]) => void;
   updateAssetValue: (id: string, value: number) => void;
-  addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number) => void;
+  updateAssetUnits: (id: string, units: number | null) => void;
+  addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number, units?: number | null) => void;
   removeAsset: (id: string) => void;
   updateTargetWeight: (id: string, weight: number) => void;
   runRebalance: (cash: number) => RebalanceSummary;
@@ -65,12 +68,14 @@ export const usePortfolioStore = create<PortfolioStore>()(
       monthlyAddedMonth: new Date().toISOString().slice(0, 7),
       history: [],
       lastPriceUpdate: null,
+      priceUpdateStatus: 'idle',
 
       setLastPriceUpdate: (date) => set({ lastPriceUpdate: date }),
+      setPriceUpdateStatus: (status) => set({ priceUpdateStatus: status }),
 
       setAssets: (assets) => set({ assets }),
 
-      addAsset: (symbol, name, targetWeight, currentValue) =>
+      addAsset: (symbol, name, targetWeight, currentValue, units = null) =>
         set((state) => ({
           assets: [
             ...state.assets,
@@ -80,6 +85,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
               name,
               target_weight: targetWeight / 100,
               current_value: currentValue,
+              units: units ?? null,
             },
           ],
           lastResult: null,
@@ -105,6 +111,13 @@ export const usePortfolioStore = create<PortfolioStore>()(
             a.id === id ? { ...a, current_value: value, lastUpdated: Date.now() } : a
           ),
           lastResult: null,
+        })),
+
+      updateAssetUnits: (id, units) =>
+        set((state) => ({
+          assets: state.assets.map((a) =>
+            a.id === id ? { ...a, units } : a
+          ),
         })),
 
       runRebalance: (cash) => {
@@ -150,7 +163,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
 
       setPortfolioId: (id) => set({ portfolioId: id }),
 
-      resetToDefaults: () => set({ assets: DEFAULT_ASSETS, lastResult: null, appliedCash: null, monthlyAdded: 0, monthlyAddedMonth: new Date().toISOString().slice(0, 7), history: [] }),
+      resetToDefaults: () => set({ assets: DEFAULT_ASSETS, lastResult: null, appliedCash: null, monthlyAdded: 0, monthlyAddedMonth: new Date().toISOString().slice(0, 7), history: [], priceUpdateStatus: 'idle', lastPriceUpdate: null }),
     }),
     {
       name: 'robo-advisor-portfolio',

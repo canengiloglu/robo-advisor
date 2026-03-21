@@ -3,25 +3,36 @@ import { usePortfolioStore } from '../store/portfolioStore'
 import { fetchFonPrices } from '../lib/tefasApi'
 
 export function useDailyPriceUpdate() {
-  const { assets, updateAssetValue, lastPriceUpdate, setLastPriceUpdate } = usePortfolioStore()
+  const { assets, updateAssetValue, lastPriceUpdate, setLastPriceUpdate, setPriceUpdateStatus } = usePortfolioStore()
 
   useEffect(() => {
     const today = new Date().toDateString()
     if (lastPriceUpdate === today) return // Bugün zaten güncellendi
 
-    const fonCodes = assets.map(a => a.symbol)
+    const assetsWithUnits = assets.filter(a => a.units)
+    if (assetsWithUnits.length === 0) return // Birim sayısı girilmemiş varlık yok
+
+    const fonCodes = assetsWithUnits.map(a => a.symbol)
 
     fetchFonPrices(fonCodes).then(prices => {
-      let updated = false
-      assets.forEach(asset => {
+      let successCount = 0
+      assetsWithUnits.forEach(asset => {
         const price = prices[asset.symbol]
         if (price && asset.units) {
-          // Birim sayısı varsa: değer = birim * fiyat
           updateAssetValue(asset.id, price * asset.units)
-          updated = true
+          successCount++
         }
       })
-      if (updated) setLastPriceUpdate(today)
+
+      if (successCount === 0) {
+        setPriceUpdateStatus('failed')
+      } else if (successCount < assetsWithUnits.length) {
+        setPriceUpdateStatus('partial')
+        setLastPriceUpdate(today)
+      } else {
+        setPriceUpdateStatus('success')
+        setLastPriceUpdate(today)
+      }
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 }

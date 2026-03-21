@@ -14,6 +14,7 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
   const [symbol, setSymbol] = useState('');
   const [name, setName] = useState('');
   const [weight, setWeight] = useState('');
+  const [units, setUnits] = useState('');
   const t = useT();
   const c = useThemeColors();
 
@@ -29,7 +30,7 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
 
   const handleAdd = () => {
     if (!canAdd) return;
-    addAsset(symbol.trim(), name.trim(), newWeight, 0);
+    addAsset(symbol.trim(), name.trim(), newWeight, 0, parseFloat(units) || null);
     handleClose();
   };
 
@@ -37,6 +38,7 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
     setSymbol('');
     setName('');
     setWeight('');
+    setUnits('');
     onClose();
   };
 
@@ -88,6 +90,19 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
               max={100}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
+              className={`${inputClass} font-mono tabular-nums`}
+            />
+          </div>
+
+          {/* Pay Adedi */}
+          <div>
+            <label className="ds-label block mb-1.5">Pay Adedi</label>
+            <input
+              type="number"
+              placeholder="Opsiyonel"
+              min={0}
+              value={units}
+              onChange={(e) => setUnits(e.target.value)}
               className={`${inputClass} font-mono tabular-nums`}
             />
           </div>
