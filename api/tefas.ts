@@ -24,12 +24,17 @@ export default async function handler(req: Request) {
         `https://www.tefas.gov.tr/api/DB/BindHistoryInfo?fontip=YAT&sfonkod=${code.trim()}&bastarih=${today}&bittarih=${today}`,
         {
           headers: {
-            'Referer': 'https://www.tefas.gov.tr/',
-            'User-Agent': 'Mozilla/5.0'
+            'Referer': 'https://www.tefas.gov.tr/FonAnaliz.aspx',
+            'Origin': 'https://www.tefas.gov.tr',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'X-Requested-With': 'XMLHttpRequest'
           }
         }
       )
-      const data = await res.json()
+      const text = await res.text()
+      console.log('TEFAS response:', text)
+      const data = JSON.parse(text)
       const price = data?.data?.[0]?.FIYAT ?? null
       results[code.trim()] = price ? parseFloat(price) : null
     } catch {
