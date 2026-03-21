@@ -12,7 +12,8 @@ import { PortfolioTable } from '../components/Portfolio/PortfolioTable';
 import { AddAssetModal } from '../components/Portfolio/AddAssetModal';
 import { RebalancePanel } from '../components/Rebalance/RebalancePanel';
 import { AllocationPieChart } from '../components/Charts/AllocationPieChart';
-import { fmtTL, formatAge } from '../lib/format';
+import { fmtTL, formatAge } from '../lib/format'
+import { useDailyPriceUpdate } from '../hooks/useDailyPriceUpdate';
 
 function computeHealth(assets: StoredAsset[], total: number): number | null {
   if (total === 0) return null;
@@ -94,6 +95,7 @@ function IconBtn({ onClick, title, children }: { onClick: () => void; title?: st
 }
 
 export function Dashboard() {
+  useDailyPriceUpdate();
   const { assets, resetToDefaults, lastResult, monthlyAdded, monthlyAddedMonth } = usePortfolioStore();
   const { theme, language, toggleTheme, toggleLanguage } = useSettingsStore();
   const c = useThemeColors();

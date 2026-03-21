@@ -18,6 +18,7 @@ export interface RebalanceRecord {
 
 export interface StoredAsset extends Asset {
   lastUpdated?: number; // Unix timestamp (ms)
+  units?: number | null; // Birim sayısı (otomatik fiyat güncellemesi için)
 }
 
 // Gerçek portföy verisi (Mart 2026)
@@ -38,7 +39,9 @@ interface PortfolioStore {
   monthlyAdded: number;
   monthlyAddedMonth: string;
   history: RebalanceRecord[];
+  lastPriceUpdate: string | null;
 
+  setLastPriceUpdate: (date: string) => void;
   setAssets: (assets: StoredAsset[]) => void;
   updateAssetValue: (id: string, value: number) => void;
   addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number) => void;
@@ -61,6 +64,9 @@ export const usePortfolioStore = create<PortfolioStore>()(
       monthlyAdded: 0,
       monthlyAddedMonth: new Date().toISOString().slice(0, 7),
       history: [],
+      lastPriceUpdate: null,
+
+      setLastPriceUpdate: (date) => set({ lastPriceUpdate: date }),
 
       setAssets: (assets) => set({ assets }),
 
