@@ -196,7 +196,7 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
       ) : (
         <span
           onClick={handleValueClick}
-          title={isAutoMode ? 'Pay adedi × TEFAS fiyatı ile otomatik güncellenir' : t.clickToEdit}
+          title={isAutoMode ? t.autoUpdated : t.clickToEdit}
           className="flex items-center justify-end gap-1.5 font-mono text-right tabular-nums text-sm font-medium rounded-lg px-3 py-1.5 transition-all duration-150"
           style={{
             color: asset.current_value > 0 ? c.textPrimary : c.textDisabled,

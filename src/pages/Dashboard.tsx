@@ -162,14 +162,14 @@ export function Dashboard() {
           {/* Sağ: Badge + toggles + reset */}
           <div className="flex items-center gap-2">
             {lastUpdated && <LastUpdatedHeader ts={lastUpdated} />}
-            {priceUpdateStatus === 'success' && (
+            {(() => { const d = new Date().getDay(); return d >= 1 && d <= 5; })() && priceUpdateStatus === 'success' && (
               <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#4ADE80', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)' }}>
-                ↻ Fiyatlar güncellendi
+                {t.priceUpdateSuccess}
               </span>
             )}
-            {(priceUpdateStatus === 'failed' || priceUpdateStatus === 'partial') && (
+            {(() => { const d = new Date().getDay(); return d >= 1 && d <= 5; })() && (priceUpdateStatus === 'failed' || priceUpdateStatus === 'partial') && (
               <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#FBBF24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                ⚠ {priceUpdateStatus === 'failed' ? 'Fiyat güncelleme başarısız' : 'Bazı fiyatlar güncellenemedi'}
+                {priceUpdateStatus === 'failed' ? t.priceUpdateFailed : t.priceUpdatePartial}
               </span>
             )}
             <span
@@ -393,7 +393,7 @@ export function Dashboard() {
           }}
         >
           <span>⚠</span>
-          <span>Fiyatlar güncellenemedi — borsa kapalı olabilir. Değerleri manuel güncelleyebilirsiniz.</span>
+          <span>{t.priceUpdateToastMsg}</span>
           <button onClick={() => setToastVisible(false)} style={{ marginLeft: 8, opacity: 0.6, background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 14 }}>✕</button>
         </div>
       )}

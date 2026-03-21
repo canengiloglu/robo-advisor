@@ -96,7 +96,7 @@ export function AddAssetModal({ open, onClose }: AddAssetModalProps) {
 
           {/* Pay Adedi */}
           <div>
-            <label className="ds-label block mb-1.5">Pay Adedi</label>
+            <label className="ds-label block mb-1.5">{t.payAdedi}</label>
             <input
               type="number"
               placeholder="Opsiyonel"

@@ -94,6 +94,18 @@ const tr = {
   symbolPlaceholder: 'ör: GARAN',
   assetNamePlaceholder: 'ör: Garanti Bankası',
   overLimitWarning: (total: number) => `Toplam hedef ağırlık %100'ü aşıyor (%${total.toFixed(1)})`,
+
+  // Price update status
+  priceUpdateSuccess: '↻ Fiyatlar güncellendi',
+  priceUpdateFailed: '⚠ Fiyat güncellenemedi',
+  priceUpdatePartial: '⚠ Bazı fiyatlar güncellenemedi',
+  priceUpdateToastMsg: 'Fiyatlar güncellenemedi — borsa kapalı olabilir. Değerleri manuel güncelleyebilirsiniz.',
+
+  // Asset fields
+  payAdedi: 'Pay Adedi',
+  valueTL: 'Değer (TL)',
+  autoUpdated: 'Otomatik güncellenir',
+  addAsset: 'Varlık Ekle',
 };
 
 const en: typeof tr = {
@@ -179,6 +191,18 @@ const en: typeof tr = {
   symbolPlaceholder: 'e.g. GARAN',
   assetNamePlaceholder: 'e.g. Garantibank',
   overLimitWarning: (total: number) => `Total target weight exceeds 100% (${total.toFixed(1)}%)`,
+
+  // Price update status
+  priceUpdateSuccess: '↻ Prices updated',
+  priceUpdateFailed: '⚠ Price update failed',
+  priceUpdatePartial: '⚠ Some prices unavailable',
+  priceUpdateToastMsg: 'Prices could not be updated — market may be closed. You can update values manually.',
+
+  // Asset fields
+  payAdedi: 'Units',
+  valueTL: 'Value (₺)',
+  autoUpdated: 'Auto updated',
+  addAsset: 'Add Asset',
 };
 
 export const translations = { tr, en };

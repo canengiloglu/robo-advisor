@@ -95,8 +95,8 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
     { label: t.symbol,      align: 'left',   hideOnMobile: false },
     { label: t.asset,       align: 'left',   hideOnMobile: false },
     { label: t.target,      align: 'center', hideOnMobile: false },
-    { label: 'PAY ADEDİ',  align: 'right',  hideOnMobile: true  },
-    { label: 'DEĞER (TL)', align: 'right',  hideOnMobile: false },
+    { label: t.payAdedi,    align: 'right',  hideOnMobile: true  },
+    { label: t.valueTL,     align: 'right',  hideOnMobile: false },
     { label: t.lastUpdate,  align: 'right',  hideOnMobile: true  },
     { label: '',            align: 'left',   hideOnMobile: true  },
   ];

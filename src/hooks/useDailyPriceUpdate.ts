@@ -6,7 +6,11 @@ export function useDailyPriceUpdate() {
   const { assets, updateAssetValue, lastPriceUpdate, setLastPriceUpdate, setPriceUpdateStatus } = usePortfolioStore()
 
   useEffect(() => {
-    const today = new Date().toDateString()
+    const now = new Date()
+    const day = now.getDay()
+    if (day === 0 || day === 6) return // Hafta sonu — sessizce atla
+
+    const today = now.toDateString()
     if (lastPriceUpdate === today) return // Bugün zaten güncellendi
 
     const assetsWithUnits = assets.filter(a => a.units)
