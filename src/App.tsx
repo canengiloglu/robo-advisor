@@ -22,19 +22,28 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    const supabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL;
+
     loadFromSupabase().then((data) => {
-      if (!data || !data.assets || data.assets.length === 0) {
-        console.log('No Supabase data, using localStorage');
-        return;
+      if (data && data.assets && data.assets.length > 0) {
+        // Supabase'de veri var — store'u güncelle ve onboarding'i tamamlandı say
+        console.log('Loading from Supabase:', data);
+        usePortfolioStore.setState({
+          assets: data.assets,
+          history: data.history ?? [],
+          monthlyAdded: data.monthlyAdded ?? 0,
+          monthlyAddedMonth: data.monthlyAddedMonth ?? '',
+        });
+        useSettingsStore.getState().completeOnboarding();
+        console.log('Store updated from Supabase:', data.assets.length, 'assets');
+      } else if (supabaseConfigured) {
+        // Supabase yapılandırılmış ama veri yok — onboarding'e gönder
+        console.log('No Supabase data, redirecting to onboarding');
+        useSettingsStore.getState().resetOnboarding();
+      } else {
+        // Supabase yapılandırılmamış — localStorage'a dokuma
+        console.log('Supabase not configured, using localStorage');
       }
-      console.log('Loading from Supabase:', data);
-      usePortfolioStore.setState({
-        assets: data.assets,
-        history: data.history ?? [],
-        monthlyAdded: data.monthlyAdded ?? 0,
-        monthlyAddedMonth: data.monthlyAddedMonth ?? '',
-      });
-      console.log('Store updated from Supabase:', data.assets.length, 'assets');
     }).catch(console.error);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
