@@ -208,9 +208,11 @@ export function Dashboard() {
               {language === 'tr' ? 'EN' : 'TR'}
             </button>
 
-            <Button variant="ghost" className="hidden md:block text-xs py-1.5 px-3" onClick={resetToDefaults}>
-              {t.reset}
-            </Button>
+            {import.meta.env.DEV && (
+              <Button variant="ghost" className="hidden md:block text-xs py-1.5 px-3" onClick={resetToDefaults}>
+                {t.reset}
+              </Button>
+            )}
 
             {import.meta.env.DEV && (
               <button
