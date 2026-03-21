@@ -9,8 +9,8 @@ import { useIsMobile } from '../../lib/useIsMobile';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { useT } from '../../hooks/useT';
 
-export const PORTFOLIO_GRID        = '60px 1fr 80px 150px 100px 100px 80px 32px';
-export const PORTFOLIO_GRID_MOBILE = '48px 1fr 60px 110px 80px';
+export const PORTFOLIO_GRID        = '60px 1fr 80px 100px 150px 80px 32px';
+export const PORTFOLIO_GRID_MOBILE = '48px 1fr 60px 120px';
 
 const STATUS_COLORS: Record<WeightStatus['type'], string> = {
   ok:      '#4ADE80',
@@ -92,14 +92,13 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
   const bulkStatus   = bulkMode  ? activeStatus : null;
 
   const HEADERS = [
-    { label: t.symbol,       align: 'left',   hideOnMobile: false },
-    { label: t.asset,        align: 'left',   hideOnMobile: false },
-    { label: t.target,       align: 'center', hideOnMobile: false },
-    { label: t.currentValue, align: 'right',  hideOnMobile: false },
-    { label: 'PAY ADEDİ',   align: 'right',  hideOnMobile: true  },
-    { label: t.amount,       align: 'right',  hideOnMobile: false },
-    { label: t.lastUpdate,   align: 'right',  hideOnMobile: true  },
-    { label: '',             align: 'left',   hideOnMobile: true  },
+    { label: t.symbol,      align: 'left',   hideOnMobile: false },
+    { label: t.asset,       align: 'left',   hideOnMobile: false },
+    { label: t.target,      align: 'center', hideOnMobile: false },
+    { label: 'PAY ADEDİ',  align: 'right',  hideOnMobile: true  },
+    { label: 'DEĞER (TL)', align: 'right',  hideOnMobile: false },
+    { label: t.lastUpdate,  align: 'right',  hideOnMobile: true  },
+    { label: '',            align: 'left',   hideOnMobile: true  },
   ];
 
   return (
@@ -238,7 +237,7 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
           borderTop: `1px solid ${c.borderSubtle}`,
         }}
       >
-        <span className="col-span-4" style={{ fontSize: 13, color: c.textDim }}>{t.totalValue}</span>
+        <span className="col-span-3" style={{ fontSize: 13, color: c.textDim }}>{t.totalValue}</span>
         {!isMobile && <span />}
         <span className="text-right tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 15, color: c.textPrimary, fontWeight: 600, letterSpacing: '-0.5px' }}>
           {total > 0 ? fmtTL(total) : <span style={{ color: c.textDisabled }}>—</span>}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { StoredAsset } from '../../store/portfolioStore';
 import { fmtTL, formatAge } from '../../lib/format';
@@ -60,6 +61,23 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
   const { isEditing, draft, status, autoFocus, onClick, onChange, onCommit, onCancel } = weightEdit;
   const c = useThemeColors();
   const t = useT();
+
+  const [valueEditing, setValueEditing] = useState(false);
+  const [valueDraft, setValueDraft] = useState('');
+
+  const isAutoMode = Boolean(asset.units);
+
+  const handleValueClick = () => {
+    if (isAutoMode) return;
+    setValueDraft(asset.current_value ? asset.current_value.toFixed(2) : '');
+    setValueEditing(true);
+  };
+
+  const commitValueEdit = () => {
+    const val = parseFloat(valueDraft) || 0;
+    onValueChange(asset.id, val);
+    setValueEditing(false);
+  };
 
   const handleRemove = () => {
     if (window.confirm(t.deleteConfirm(asset.symbol))) {
@@ -146,18 +164,7 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
         )}
       </span>
 
-      {/* 4. Değer input */}
-      <input
-        type="number"
-        value={asset.current_value ? parseFloat(asset.current_value.toFixed(2)) : ''}
-        placeholder="0"
-        min={0}
-        onChange={(e) => onValueChange(asset.id, parseFloat(e.target.value) || 0)}
-        className="input-field font-mono w-full rounded-lg px-3 py-1.5 text-right text-sm tabular-nums"
-        style={isMobile ? { maxWidth: 120 } : undefined}
-      />
-
-      {/* 5. Pay adedi — masaüstünde göster */}
+      {/* 4. Pay adedi — masaüstünde göster */}
       {!isMobile && (
         <input
           type="number"
@@ -169,10 +176,43 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
         />
       )}
 
-      {/* 6. Tutar */}
-      <span className="font-mono text-right tabular-nums text-sm font-medium" style={{ color: c.textPrimary }}>
-        {asset.current_value > 0 ? fmtTL(asset.current_value) : <span style={{ color: c.textDisabled }}>—</span>}
-      </span>
+      {/* 5. DEĞER (TL) — inline edit, otomatik modda kilitli */}
+      {valueEditing ? (
+        <input
+          type="number"
+          value={valueDraft}
+          placeholder="0"
+          min={0}
+          autoFocus
+          onChange={(e) => setValueDraft(e.target.value)}
+          onBlur={commitValueEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur();
+            if (e.key === 'Escape') setValueEditing(false);
+          }}
+          className="input-field font-mono w-full rounded-lg px-3 py-1.5 text-right text-sm tabular-nums"
+          style={isMobile ? { maxWidth: 120 } : undefined}
+        />
+      ) : (
+        <span
+          onClick={handleValueClick}
+          title={isAutoMode ? 'Pay adedi × TEFAS fiyatı ile otomatik güncellenir' : t.clickToEdit}
+          className="flex items-center justify-end gap-1.5 font-mono text-right tabular-nums text-sm font-medium rounded-lg px-3 py-1.5 transition-all duration-150"
+          style={{
+            color: asset.current_value > 0 ? c.textPrimary : c.textDisabled,
+            cursor: isAutoMode ? 'default' : 'pointer',
+            background: isAutoMode ? 'rgba(99,102,241,0.04)' : 'transparent',
+            border: isAutoMode ? `1px solid ${c.borderVerySubtle}` : '1px solid transparent',
+          }}
+          onMouseEnter={(e) => { if (!isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = c.border; }}
+          onMouseLeave={(e) => { if (!isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = 'transparent'; }}
+        >
+          {asset.current_value > 0 ? fmtTL(asset.current_value) : <span style={{ color: c.textDisabled }}>—</span>}
+          {isAutoMode && (
+            <span style={{ opacity: 0.5, fontSize: 10 }}>🔒</span>
+          )}
+        </span>
+      )}
 
       {/* 6. Güncelleme — masaüstünde göster */}
       {!isMobile && (
