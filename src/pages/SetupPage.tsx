@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePortfolioStore } from '../store/portfolioStore';
-import { useSettingsStore } from '../store/settingsStore';
 import type { StoredAsset } from '../store/portfolioStore';
 
 const STEP_COUNT = 3;
@@ -423,10 +422,9 @@ function GhostBtn({ onClick, children }: { onClick: () => void; children: React.
 
 // ── Main SetupPage ────────────────────────────────────────────────────────────
 
-export function SetupPage() {
+export function SetupPage({ onComplete }: { onComplete?: () => void }) {
   const navigate = useNavigate();
   const { assets, setAssets } = usePortfolioStore();
-  const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
 
   const [step, setStep] = useState(1);
   const [values, setValues] = useState<Record<string, string>>(() =>
@@ -451,7 +449,7 @@ export function SetupPage() {
       units: parseFloat(units[a.id]) || null,
     }));
     setAssets(updatedAssets);
-    completeOnboarding();
+    onComplete?.();
     navigate('/');
   };
 

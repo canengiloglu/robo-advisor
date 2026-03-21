@@ -241,7 +241,6 @@ export function HistoryPage() {
             {import.meta.env.DEV && (
               <button
                 onClick={() => {
-                  useSettingsStore.getState().resetOnboarding();
                   window.location.href = '/onboarding';
                 }}
                 style={{ fontSize: 10, opacity: 0.3 }}

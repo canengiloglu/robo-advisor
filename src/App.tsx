@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Dashboard } from './pages/Dashboard';
@@ -9,14 +9,20 @@ import { useSettingsStore } from './store/settingsStore';
 import { usePortfolioStore } from './store/portfolioStore';
 import { loadFromSupabase } from './lib/supabaseSync';
 
-function RequireOnboarding({ children }: { children: React.ReactNode }) {
-  const hasCompletedOnboarding = useSettingsStore((s) => s.hasCompletedOnboarding);
-  if (!hasCompletedOnboarding) return <Navigate to="/onboarding" replace />;
-  return <>{children}</>;
+function LoadingScreen() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#05070F' }}>
+      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid #4F46E5', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 }
 
 export default function App() {
   const theme = useSettingsStore((s) => s.theme);
+  const [loading, setLoading] = useState(true);
+  const [onboardingDone, setOnboardingDone] = useState(false);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -24,18 +30,24 @@ export default function App() {
   useEffect(() => {
     loadFromSupabase().then((data) => {
       if (data && data.assets && data.assets.length > 0) {
-        // Supabase'de veri var — store'u güncelle ve onboarding'i tamamlandı say
         usePortfolioStore.setState({
           assets: data.assets,
           history: data.history ?? [],
           monthlyAdded: data.monthlyAdded ?? 0,
           monthlyAddedMonth: data.monthlyAddedMonth ?? '',
         });
-        useSettingsStore.getState().completeOnboarding();
+        setOnboardingDone(true);
+      } else {
+        setOnboardingDone(false);
       }
-      // Supabase boşsa veya yapılandırılmamışsa — localStorage'a dokuma
-    }).catch(console.error);
+      setLoading(false);
+    }).catch(() => {
+      setOnboardingDone(false);
+      setLoading(false);
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (loading) return <LoadingScreen />;
 
   return (
     <BrowserRouter>
@@ -56,9 +68,9 @@ export default function App() {
       />
       <Routes>
         <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/setup" element={<SetupPage />} />
-        <Route path="/" element={<RequireOnboarding><Dashboard /></RequireOnboarding>} />
-        <Route path="/history" element={<RequireOnboarding><HistoryPage /></RequireOnboarding>} />
+        <Route path="/setup" element={<SetupPage onComplete={() => setOnboardingDone(true)} />} />
+        <Route path="/" element={onboardingDone ? <Dashboard /> : <Navigate to="/onboarding" replace />} />
+        <Route path="/history" element={onboardingDone ? <HistoryPage /> : <Navigate to="/onboarding" replace />} />
       </Routes>
     </BrowserRouter>
   );
