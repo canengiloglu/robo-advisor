@@ -25,7 +25,13 @@ export default function App() {
 
   useEffect(() => {
     loadFromSupabase().then((data) => {
-      if (data) setStoreFromSupabase(data);
+      if (!data || !data.assets || data.assets.length === 0) {
+        console.log('No Supabase data, using localStorage');
+        return;
+      }
+      console.log('Loading from Supabase:', data);
+      setStoreFromSupabase(data);
+      console.log('Store updated from Supabase');
     }).catch(console.error);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
