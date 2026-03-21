@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base:        #080B12;
+  --bg-card:        #0F1420;
+  --bg-hover:       rgba(99,102,241,0.03);
+  --border:         rgba(255,255,255,0.06);
+  --border-hover:   rgba(99,102,241,0.25);
+  --accent:         #6366F1;
+  --accent-2:       #8B5CF6;
+  --text-primary:   #F8FAFC;
+  --text-secondary: #64748B;
+  --text-muted:     #1E293B;
+  --green:          #4ADE80;
+  --amber:          #FBBF24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* JetBrains Mono for all monospaced values */
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace !important;
+}
+
+/* Uniform label style for all section headers / column headers */
+.ds-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+/* Top accent glow line — stat card */
+.card-glow-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.6), rgba(139,92,246,0.4), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Top accent glow line — cash panel (slightly stronger) */
+.card-accent-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.7), rgba(139,92,246,0.5), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Standard input field — shared focus style */
+.input-field {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: #F8FAFC;
+  transition: border-color 150ms;
+}
+.input-field:focus {
+  outline: none;
+  border-color: rgba(99,102,241,0.4);
+}
+
+:root[data-theme="light"] {
+  --text-primary: #0F172A;
+  --bg-base: #F8FAFC;
+}
+
+[data-theme="light"] .input-field {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.12);
+  color: #0F172A;
+}
+[data-theme="light"] .input-field:focus {
+  border-color: rgba(99,102,241,0.5);
+}
+
+/* Hide number input spinners */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Thin scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
