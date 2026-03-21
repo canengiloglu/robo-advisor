@@ -6,6 +6,8 @@ import { HistoryPage } from './pages/HistoryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SetupPage } from './pages/SetupPage';
 import { useSettingsStore } from './store/settingsStore';
+import { usePortfolioStore } from './store/portfolioStore';
+import { loadFromSupabase } from './lib/supabaseSync';
 
 function RequireOnboarding({ children }: { children: React.ReactNode }) {
   const hasCompletedOnboarding = useSettingsStore((s) => s.hasCompletedOnboarding);
@@ -15,9 +17,17 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const theme = useSettingsStore((s) => s.theme);
+  const setStoreFromSupabase = usePortfolioStore((s) => s.setStoreFromSupabase);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    loadFromSupabase().then((data) => {
+      if (data) setStoreFromSupabase(data);
+    }).catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <BrowserRouter>

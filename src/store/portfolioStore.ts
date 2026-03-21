@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Asset, RebalanceSummary } from '../lib/rebalance';
 import { rebalance } from '../lib/rebalance';
+import { syncToSupabase } from '../lib/supabaseSync';
 
 export interface RebalanceRecord {
   id: string;
@@ -45,6 +46,7 @@ interface PortfolioStore {
   setLastPriceUpdate: (date: string) => void;
   setPriceUpdateStatus: (status: 'idle' | 'success' | 'partial' | 'failed') => void;
   setAssets: (assets: StoredAsset[]) => void;
+  setStoreFromSupabase: (data: { assets: StoredAsset[]; history: RebalanceRecord[]; monthlyAdded: number; monthlyAddedMonth: string; lastPriceUpdate: string | null }) => void;
   updateAssetValue: (id: string, value: number) => void;
   updateAssetUnits: (id: string, units: number | null) => void;
   addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number, units?: number | null) => void;
@@ -75,7 +77,16 @@ export const usePortfolioStore = create<PortfolioStore>()(
 
       setAssets: (assets) => set({ assets }),
 
-      addAsset: (symbol, name, targetWeight, currentValue, units = null) =>
+      setStoreFromSupabase: (data) => set({
+        assets: data.assets,
+        history: data.history,
+        monthlyAdded: data.monthlyAdded,
+        monthlyAddedMonth: data.monthlyAddedMonth,
+        lastPriceUpdate: data.lastPriceUpdate,
+        lastResult: null,
+      }),
+
+      addAsset: (symbol, name, targetWeight, currentValue, units = null) => {
         set((state) => ({
           assets: [
             ...state.assets,
@@ -89,13 +100,19 @@ export const usePortfolioStore = create<PortfolioStore>()(
             },
           ],
           lastResult: null,
-        })),
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
 
-      removeAsset: (id) =>
+      removeAsset: (id) => {
         set((state) => ({
           assets: state.assets.filter((a) => a.id !== id),
           lastResult: null,
-        })),
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
 
       updateTargetWeight: (id, weight) =>
         set((state) => ({
@@ -105,13 +122,16 @@ export const usePortfolioStore = create<PortfolioStore>()(
           lastResult: null,
         })),
 
-      updateAssetValue: (id, value) =>
+      updateAssetValue: (id, value) => {
         set((state) => ({
           assets: state.assets.map((a) =>
             a.id === id ? { ...a, current_value: value, lastUpdated: Date.now() } : a
           ),
           lastResult: null,
-        })),
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
 
       updateAssetUnits: (id, units) =>
         set((state) => ({
@@ -157,6 +177,8 @@ export const usePortfolioStore = create<PortfolioStore>()(
           monthlyAddedMonth: currentMonth,
           history: [record, ...history],
         });
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
       },
 
       clearResult: () => set({ lastResult: null }),
