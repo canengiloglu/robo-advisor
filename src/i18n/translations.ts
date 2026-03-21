@@ -106,6 +106,8 @@ const tr = {
   valueTL: 'Değer (TL)',
   autoUpdated: 'Otomatik güncellenir',
   addAsset: 'Varlık Ekle',
+  editRowValues: 'Değeri Düzenle',
+  deleteAssetTip: 'Varlığı Sil',
 };
 
 const en: typeof tr = {
@@ -203,6 +205,8 @@ const en: typeof tr = {
   valueTL: 'Value (₺)',
   autoUpdated: 'Auto updated',
   addAsset: 'Add Asset',
+  editRowValues: 'Edit Values',
+  deleteAssetTip: 'Delete Asset',
 };
 
 export const translations = { tr, en };

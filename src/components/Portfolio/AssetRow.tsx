@@ -241,6 +241,7 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
         <span className="flex justify-center items-center gap-0.5">
           <button
             onClick={() => setRowEditMode(m => !m)}
+            title={rowEditMode ? t.save : t.editRowValues}
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded"
             style={{ color: rowEditMode ? '#4ADE80' : c.textSecondary }}
             onMouseEnter={(e) => (e.currentTarget.style.color = rowEditMode ? '#86EFAC' : c.textPrimary)}
@@ -250,6 +251,7 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
           </button>
           <button
             onClick={handleRemove}
+            title={t.deleteAssetTip}
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded"
             style={{ color: '#EF4444' }}
             onMouseEnter={(e) => (e.currentTarget.style.color = '#FCA5A5')}

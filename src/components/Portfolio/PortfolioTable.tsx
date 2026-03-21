@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Edit2 } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { usePortfolioStore } from '../../store/portfolioStore';
 import type { StoredAsset } from '../../store/portfolioStore';
 import { AssetRow } from './AssetRow';
@@ -128,21 +128,28 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
               (e.currentTarget as HTMLButtonElement).style.borderColor = c.border;
             }}
           >
-            <Edit2 size={13} />
+            <SlidersHorizontal size={13} />
           </button>
-          <button
-            onClick={onAddClick}
-            className="rounded-lg px-3 py-1 text-sm transition-all duration-150"
-            style={{
-              border: '1px solid rgba(99,102,241,0.3)',
-              color: '#818CF8',
-              background: 'rgba(99,102,241,0.06)',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(99,102,241,0.12)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(99,102,241,0.06)')}
-          >
-            +
-          </button>
+          <div className="relative group/add">
+            <button
+              onClick={onAddClick}
+              title={t.addAsset}
+              className="rounded-lg px-3 py-1 text-sm transition-all duration-150"
+              style={{
+                border: '1px solid rgba(99,102,241,0.3)',
+                color: '#818CF8',
+                background: 'rgba(99,102,241,0.06)',
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(99,102,241,0.12)')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'rgba(99,102,241,0.06)')}
+            >
+              +
+            </button>
+            <span className="pointer-events-none absolute right-0 top-full mt-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium opacity-0 group-hover/add:opacity-100 transition-opacity duration-150 z-10"
+              style={{ background: c.bgCard, border: `1px solid ${c.border}`, color: c.textSecondary }}>
+              {t.addAsset}
+            </span>
+          </div>
         </div>
       </div>
 
