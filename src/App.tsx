@@ -17,8 +17,6 @@ function RequireOnboarding({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const theme = useSettingsStore((s) => s.theme);
-  const setStoreFromSupabase = usePortfolioStore((s) => s.setStoreFromSupabase);
-
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
@@ -30,8 +28,13 @@ export default function App() {
         return;
       }
       console.log('Loading from Supabase:', data);
-      setStoreFromSupabase(data);
-      console.log('Store updated from Supabase');
+      usePortfolioStore.setState({
+        assets: data.assets,
+        history: data.history ?? [],
+        monthlyAdded: data.monthlyAdded ?? 0,
+        monthlyAddedMonth: data.monthlyAddedMonth ?? '',
+      });
+      console.log('Store updated from Supabase:', data.assets.length, 'assets');
     }).catch(console.error);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
