@@ -204,11 +204,12 @@ export const usePortfolioStore = create<PortfolioStore>()(
         });
 
         const newHistory = history.slice(1);
+        const newMonthlyAdded = Math.max(0, get().monthlyAdded - lastRecord.cashAdded);
 
-        set({ assets: newAssets, history: newHistory });
+        set({ assets: newAssets, history: newHistory, monthlyAdded: newMonthlyAdded });
 
         const s = get();
-        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+        syncToSupabase({ assets: newAssets, history: newHistory, monthlyAdded: newMonthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
 
         import('../lib/supabase').then(({ supabase }) => {
           if (supabase) {
