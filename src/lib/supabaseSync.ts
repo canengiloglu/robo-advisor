@@ -12,6 +12,8 @@ interface SyncState {
 }
 
 export async function syncToSupabase(state: SyncState) {
+  if (!supabase) return
+
   const { error: pError } = await supabase
     .from('portfolios')
     .upsert({
@@ -59,6 +61,8 @@ export async function syncToSupabase(state: SyncState) {
 }
 
 export async function loadFromSupabase() {
+  if (!supabase) return null
+
   const { data: portfolio } = await supabase
     .from('portfolios')
     .select('*')
