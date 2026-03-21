@@ -32,11 +32,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
 
       const text = await response.text()
-      console.log('TEFAS raw response:', text.substring(0, 200))
+      console.log('TEFAS raw response:', text.substring(0, 500))
+      console.log('Response status:', response.status)
 
-      const data = JSON.parse(text)
-      const price = data?.data?.[0]?.FIYAT ?? null
-      results[code.trim()] = price ? parseFloat(price) : null
+      if (!text || text.trim() === '') {
+        console.log('Empty response from TEFAS for', code)
+        results[code.trim()] = null
+        return
+      }
+
+      try {
+        const data = JSON.parse(text)
+        const price = data?.data?.[0]?.FIYAT ?? null
+        results[code.trim()] = price ? parseFloat(price) : null
+      } catch (e) {
+        console.error('JSON parse error for', code, ':', text.substring(0, 100))
+        results[code.trim()] = null
+      }
     } catch (e) {
       console.error('Error fetching', code, e)
       results[code.trim()] = null
