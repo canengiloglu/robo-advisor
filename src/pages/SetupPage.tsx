@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePortfolioStore } from '../store/portfolioStore';
 import type { StoredAsset } from '../store/portfolioStore';
+import { syncToSupabase } from '../lib/supabaseSync';
 
 const STEP_COUNT = 3;
 
@@ -441,7 +442,7 @@ export function SetupPage({ onComplete }: { onComplete?: () => void }) {
   const weightOk = Math.abs(totalWeight - 100) < 0.05;
   const weightOver = totalWeight > 100.05;
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     const updatedAssets: StoredAsset[] = assets.map((a) => ({
       ...a,
       current_value: parseFloat(values[a.id]) || 0,
@@ -449,6 +450,17 @@ export function SetupPage({ onComplete }: { onComplete?: () => void }) {
       units: parseFloat(units[a.id]) || null,
     }));
     setAssets(updatedAssets);
+
+    const s = usePortfolioStore.getState();
+    await syncToSupabase({
+      assets: updatedAssets,
+      history: s.history,
+      monthlyAdded: s.monthlyAdded,
+      monthlyAddedMonth: s.monthlyAddedMonth,
+      lastPriceUpdate: s.lastPriceUpdate,
+    }).catch(console.error);
+
+    console.log('Setup complete, synced to Supabase');
     onComplete?.();
     navigate('/');
   };
