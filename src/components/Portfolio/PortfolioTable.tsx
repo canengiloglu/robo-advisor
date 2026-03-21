@@ -9,7 +9,7 @@ import { useIsMobile } from '../../lib/useIsMobile';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { useT } from '../../hooks/useT';
 
-export const PORTFOLIO_GRID        = '60px 1fr 80px 100px 150px 80px 32px';
+export const PORTFOLIO_GRID        = '60px 1fr 80px 100px 150px 80px 52px';
 export const PORTFOLIO_GRID_MOBILE = '48px 1fr 60px 120px';
 
 const STATUS_COLORS: Record<WeightStatus['type'], string> = {

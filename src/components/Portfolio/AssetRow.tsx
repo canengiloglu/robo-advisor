@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit2, Check } from 'lucide-react';
 import type { StoredAsset } from '../../store/portfolioStore';
 import { fmtTL, formatAge } from '../../lib/format';
 import { useThemeColors } from '../../hooks/useThemeColors';
@@ -62,13 +62,14 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
   const c = useThemeColors();
   const t = useT();
 
+  const [rowEditMode, setRowEditMode] = useState(false);
   const [valueEditing, setValueEditing] = useState(false);
   const [valueDraft, setValueDraft] = useState('');
 
   const isAutoMode = Boolean(asset.units);
 
   const handleValueClick = () => {
-    if (isAutoMode) return;
+    if (!rowEditMode || isAutoMode) return;
     setValueDraft(asset.current_value ? asset.current_value.toFixed(2) : '');
     setValueEditing(true);
   };
@@ -169,10 +170,24 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
         <input
           type="number"
           value={asset.units ?? ''}
-          placeholder="Pay adedi"
+          placeholder={rowEditMode ? t.payAdedi : ''}
           min={0}
-          onChange={(e) => onUnitsChange(asset.id, e.target.value ? parseFloat(e.target.value) : null)}
-          className="input-field font-mono w-full rounded-lg px-3 py-1.5 text-right text-sm tabular-nums"
+          readOnly={!rowEditMode}
+          onChange={(e) => {
+            if (rowEditMode) onUnitsChange(asset.id, e.target.value ? parseFloat(e.target.value) : null);
+          }}
+          className="font-mono w-full rounded-lg px-3 py-1.5 text-right text-sm tabular-nums transition-all duration-150"
+          style={rowEditMode ? {
+            background: c.bgSubtle,
+            border: `1px solid ${c.border}`,
+            color: c.textPrimary,
+            cursor: 'text',
+          } : {
+            background: 'transparent',
+            border: '1px solid transparent',
+            color: asset.units ? c.textSecondary : 'transparent',
+            cursor: 'default',
+          }}
         />
       )}
 
@@ -196,16 +211,16 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
       ) : (
         <span
           onClick={handleValueClick}
-          title={isAutoMode ? t.autoUpdated : t.clickToEdit}
+          title={isAutoMode ? t.autoUpdated : rowEditMode ? t.clickToEdit : undefined}
           className="flex items-center justify-end gap-1.5 font-mono text-right tabular-nums text-sm font-medium rounded-lg px-3 py-1.5 transition-all duration-150"
           style={{
             color: asset.current_value > 0 ? c.textPrimary : c.textDisabled,
-            cursor: isAutoMode ? 'default' : 'pointer',
+            cursor: isAutoMode || !rowEditMode ? 'default' : 'pointer',
             background: isAutoMode ? 'rgba(99,102,241,0.04)' : 'transparent',
             border: isAutoMode ? `1px solid ${c.borderVerySubtle}` : '1px solid transparent',
           }}
-          onMouseEnter={(e) => { if (!isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = c.border; }}
-          onMouseLeave={(e) => { if (!isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = 'transparent'; }}
+          onMouseEnter={(e) => { if (rowEditMode && !isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = c.border; }}
+          onMouseLeave={(e) => { if (rowEditMode && !isAutoMode) (e.currentTarget as HTMLElement).style.borderColor = 'transparent'; }}
         >
           {asset.current_value > 0 ? fmtTL(asset.current_value) : <span style={{ color: c.textDisabled }}>—</span>}
           {isAutoMode && (
@@ -221,9 +236,18 @@ export function AssetRow({ asset, onValueChange, onUnitsChange, onRemove, grid, 
         </span>
       )}
 
-      {/* 7. Sil — masaüstünde göster */}
+      {/* 7. Eylemler — masaüstünde göster */}
       {!isMobile && (
-        <span className="flex justify-center">
+        <span className="flex justify-center items-center gap-0.5">
+          <button
+            onClick={() => setRowEditMode(m => !m)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded"
+            style={{ color: rowEditMode ? '#4ADE80' : c.textSecondary }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = rowEditMode ? '#86EFAC' : c.textPrimary)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = rowEditMode ? '#4ADE80' : c.textSecondary)}
+          >
+            {rowEditMode ? <Check size={13} /> : <Edit2 size={13} />}
+          </button>
           <button
             onClick={handleRemove}
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded"
