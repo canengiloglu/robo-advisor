@@ -108,6 +108,12 @@ const tr = {
   addAsset: 'Varlık Ekle',
   editRowValues: 'Değeri Düzenle',
   deleteAssetTip: 'Varlığı Sil',
+  undoRebalance: 'Geri Al',
+  undoConfirmTitle: 'Bu rebalance\'ı geri almak istediğinizden emin misiniz?',
+  undoConfirmDesc: 'Portföy değerleri eski haline dönecek.',
+  undoCancel: 'İptal',
+  undoConfirm: 'Geri Al',
+  undoSuccess: '↩ Son rebalance geri alındı',
 };
 
 const en: typeof tr = {
@@ -207,6 +213,12 @@ const en: typeof tr = {
   addAsset: 'Add Asset',
   editRowValues: 'Edit Values',
   deleteAssetTip: 'Delete Asset',
+  undoRebalance: 'Undo',
+  undoConfirmTitle: 'Are you sure you want to undo this rebalance?',
+  undoConfirmDesc: 'Portfolio values will revert to their previous state.',
+  undoCancel: 'Cancel',
+  undoConfirm: 'Undo',
+  undoSuccess: '↩ Last rebalance undone',
 };
 
 export const translations = { tr, en };

@@ -57,6 +57,7 @@ interface PortfolioStore {
   clearResult: () => void;
   setPortfolioId: (id: string) => void;
   resetToDefaults: () => void;
+  undoLastRebalance: () => void;
 }
 
 export const usePortfolioStore = create<PortfolioStore>()(
@@ -186,6 +187,40 @@ export const usePortfolioStore = create<PortfolioStore>()(
       setPortfolioId: (id) => set({ portfolioId: id }),
 
       resetToDefaults: () => set({ assets: DEFAULT_ASSETS, lastResult: null, appliedCash: null, monthlyAdded: 0, monthlyAddedMonth: new Date().toISOString().slice(0, 7), history: [], priceUpdateStatus: 'idle', lastPriceUpdate: null }),
+
+      undoLastRebalance: () => {
+        const { history, assets } = get();
+        if (history.length === 0) return;
+
+        const lastRecord = history[0];
+
+        const newAssets = assets.map((asset) => {
+          const allocation = lastRecord.allocations.find((a) => a.symbol === asset.symbol);
+          const amountToRemove = allocation?.amount ?? 0;
+          return {
+            ...asset,
+            current_value: Math.max(0, asset.current_value - amountToRemove),
+          };
+        });
+
+        const newHistory = history.slice(1);
+
+        set({ assets: newAssets, history: newHistory });
+
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+
+        import('../lib/supabase').then(({ supabase }) => {
+          if (supabase) {
+            supabase.from('rebalance_history')
+              .delete()
+              .eq('id', lastRecord.id)
+              .then(({ error }) => {
+                if (error) console.error('Undo delete error:', error);
+              });
+          }
+        });
+      },
     }),
     {
       name: 'robo-advisor-portfolio',

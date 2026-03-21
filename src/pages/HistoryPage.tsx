@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { usePortfolioStore } from '../store/portfolioStore';
 import type { RebalanceRecord } from '../store/portfolioStore';
 import { useSettingsStore } from '../store/settingsStore';
@@ -18,8 +20,64 @@ function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-function RecordCard({ record }: { record: RebalanceRecord }) {
+function UndoConfirmDialog({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
   const c = useThemeColors();
+  const t = useT();
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+      onClick={onCancel}
+    >
+      <div
+        className="rounded-2xl p-6 max-w-sm w-full mx-4 flex flex-col gap-4"
+        style={{ background: c.bgCard, border: `1px solid ${c.border}` }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-sm font-medium" style={{ color: c.textPrimary }}>{t.undoConfirmTitle}</p>
+        <p className="text-xs" style={{ color: c.textSecondary }}>{t.undoConfirmDesc}</p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-xl text-xs font-medium transition-colors duration-150"
+            style={{ background: c.bgSubtle, color: c.textSecondary, border: `1px solid ${c.border}` }}
+          >
+            {t.undoCancel}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded-xl text-xs font-medium transition-colors duration-150"
+            style={{ background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)' }}
+          >
+            {t.undoConfirm}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecordCard({ record, isLatest }: { record: RebalanceRecord; isLatest: boolean }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const undoLastRebalance = usePortfolioStore((s) => s.undoLastRebalance);
+  const c = useThemeColors();
+  const t = useT();
+
+  const handleUndo = () => {
+    undoLastRebalance();
+    setShowConfirm(false);
+    toast(t.undoSuccess, {
+      duration: 3000,
+      style: {
+        background: '#111118',
+        color: '#fbbf24',
+        border: '1px solid rgba(251,191,36,0.3)',
+        borderRadius: 12,
+        fontSize: 13,
+      },
+    });
+  };
+
   return (
     <div
       style={{
@@ -39,13 +97,26 @@ function RecordCard({ record }: { record: RebalanceRecord }) {
             {fmtTL(record.portfolioBeforeTotal)} → {fmtTL(record.portfolioAfterTotal)}
           </p>
         </div>
-        <span
-          className="font-mono font-semibold text-sm tabular-nums"
-          style={{ color: '#4ADE80', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}
-        >
-          +{fmtTL(record.cashAdded)}
-        </span>
+        <div className="flex items-center gap-3">
+          {isLatest && (
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="text-xs px-2.5 py-1 rounded-lg transition-colors duration-150"
+              style={{ color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', background: 'transparent' }}
+            >
+              {t.undoRebalance}
+            </button>
+          )}
+          <span
+            className="font-mono font-semibold text-sm tabular-nums"
+            style={{ color: '#4ADE80', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}
+          >
+            +{fmtTL(record.cashAdded)}
+          </span>
+        </div>
       </div>
+
+      {showConfirm && <UndoConfirmDialog onCancel={() => setShowConfirm(false)} onConfirm={handleUndo} />}
 
       {/* Varlık dağılımları */}
       <div>
@@ -238,8 +309,8 @@ export function HistoryPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 max-w-3xl mx-auto">
-            {history.map((record) => (
-              <RecordCard key={record.id} record={record} />
+            {history.map((record, index) => (
+              <RecordCard key={record.id} record={record} isLatest={index === 0} />
             ))}
           </div>
         )}
