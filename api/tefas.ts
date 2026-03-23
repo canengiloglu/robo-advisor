@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       )
 
       const data = await response.json()
-      console.log(`${code} response:`, JSON.stringify(data?.data?.last_price))
+      console.log(`${code} full response:`, JSON.stringify(data).substring(0, 500))
 
       const price = data?.data?.last_price
       results[code] = price && price > 0 ? price : null
