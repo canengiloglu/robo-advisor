@@ -1,42 +1,76 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const codes = (req.query.codes as string) || ''
+export const config = { runtime: 'nodejs' }
 
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  if (req.method === 'OPTIONS') return res.status(200).end()
+
+  const codes = (req.query.codes as string) || ''
   if (!codes) {
     return res.status(400).json({ error: 'codes param required' })
   }
 
-  const codeList = codes.split(',').map(c => c.trim())
-  const results: Record<string, number | null> = {}
+  // Dünün tarihini hesapla (bugünün fiyatı akşam açıklanır)
+  const now = new Date()
+  // Türkiye saati (UTC+3) ile kontrol
+  const trHour = now.getUTCHours() + 3
+  let targetDate = new Date(now)
 
-  await Promise.all(codeList.map(async (code) => {
-    try {
-      const response = await fetch(
-        `https://tefas-api.p.rapidapi.com/api/v1/funds/${code}/info`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-rapidapi-host': 'tefas-api.p.rapidapi.com',
-            'x-rapidapi-key': process.env.RAPIDAPI_KEY || ''
-          }
-        }
-      )
+  // Saat 20:00'den önceyse dünün fiyatını al
+  if (trHour < 20) {
+    targetDate.setDate(targetDate.getDate() - 1)
+  }
 
-      const data = await response.json()
-      console.log(`${code} full response:`, JSON.stringify(data).substring(0, 500))
+  // Hafta sonu kontrolü: Cumartesi → Cuma, Pazar → Cuma
+  const day = targetDate.getDay()
+  if (day === 0) targetDate.setDate(targetDate.getDate() - 2) // Pazar → Cuma
+  if (day === 6) targetDate.setDate(targetDate.getDate() - 1) // Cumartesi → Cuma
 
-      const price = data?.data?.last_price
-      results[code] = price && price > 0 ? price : null
-    } catch (e) {
-      console.error('Error fetching', code, e)
-      results[code] = null
+  const dateStr = targetDate.toISOString().split('T')[0] // YYYY-MM-DD
+
+  try {
+    const url = `https://tefas-api.p.rapidapi.com/api/v1/fund-info/by-date?fundCodes=${codes}&date=${dateStr}&limit=10`
+
+    console.log('Fetching RapidAPI:', url)
+
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': 'tefas-api.p.rapidapi.com',
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const json = await response.json()
+    console.log('RapidAPI response success:', json.success)
+
+    if (!json.success || !json.data) {
+      return res.status(502).json({
+        error: 'TEFAS API returned no data',
+        date: dateStr
+      })
     }
-  }))
 
-  const today = new Date().toLocaleDateString('tr-TR', {
-    day: '2-digit', month: '2-digit', year: 'numeric'
-  })
+    // { TLY: 4443.16, IJC: 10.86, ... } formatına dönüştür
+    const prices: Record<string, number | null> = {}
+    for (const item of json.data) {
+      prices[item.fundCode] = item.value ?? null
+    }
 
-  return res.status(200).json({ data: results, date: today })
+    return res.status(200).json({
+      data: prices,
+      date: dateStr,
+      source: 'rapidapi-tefas',
+      fundCount: json.data.length
+    })
+
+  } catch (error) {
+    console.error('RapidAPI fetch error:', error)
+    return res.status(500).json({
+      error: 'Failed to fetch prices',
+      date: dateStr
+    })
+  }
 }
