@@ -113,15 +113,24 @@ export const usePortfolioStore = create<PortfolioStore>()(
         }));
         const s = get();
         syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+        import('../lib/supabase').then(({ supabase }) => {
+          if (supabase) {
+            supabase.from('assets').delete().eq('id', id)
+              .then(({ error }) => { if (error) console.error('Asset delete error:', error) });
+          }
+        });
       },
 
-      updateTargetWeight: (id, weight) =>
+      updateTargetWeight: (id, weight) => {
         set((state) => ({
           assets: state.assets.map((a) =>
             a.id === id ? { ...a, target_weight: weight } : a
           ),
           lastResult: null,
-        })),
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
 
       updateAssetValue: (id, value) => {
         set((state) => ({
@@ -134,12 +143,15 @@ export const usePortfolioStore = create<PortfolioStore>()(
         syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
       },
 
-      updateAssetUnits: (id, units) =>
+      updateAssetUnits: (id, units) => {
         set((state) => ({
           assets: state.assets.map((a) =>
             a.id === id ? { ...a, units } : a
           ),
-        })),
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
 
       runRebalance: (cash) => {
         const result = rebalance(get().assets, cash);
