@@ -12,23 +12,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'codes param required' })
   }
 
-  // Dünün tarihini hesapla (bugünün fiyatı akşam açıklanır)
+  // Basit yaklaşım: her zaman dünü kullan
+  // (TEFAS fiyatları akşam açıklanır, gün içinde dünün verisi en günceldir)
   const now = new Date()
-  // Türkiye saati (UTC+3) ile kontrol
-  const trHour = now.getUTCHours() + 3
-  let targetDate = new Date(now)
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
 
-  // Saat 20:00'den önceyse dünün fiyatını al
-  if (trHour < 20) {
-    targetDate.setDate(targetDate.getDate() - 1)
-  }
+  // Hafta sonu kontrolü
+  const day = yesterday.getDay()
+  if (day === 0) yesterday.setDate(yesterday.getDate() - 2) // Pazar → Cuma
+  if (day === 6) yesterday.setDate(yesterday.getDate() - 1) // Cumartesi → Cuma
 
-  // Hafta sonu kontrolü: Cumartesi → Cuma, Pazar → Cuma
-  const day = targetDate.getDay()
-  if (day === 0) targetDate.setDate(targetDate.getDate() - 2) // Pazar → Cuma
-  if (day === 6) targetDate.setDate(targetDate.getDate() - 1) // Cumartesi → Cuma
-
-  const dateStr = targetDate.toISOString().split('T')[0] // YYYY-MM-DD
+  const dateStr = yesterday.toISOString().split('T')[0]
 
   try {
     const url = `https://tefas-api.p.rapidapi.com/api/v1/fund-info/by-date?fundCodes=${codes}&date=${dateStr}&limit=10`
