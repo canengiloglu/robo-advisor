@@ -100,6 +100,7 @@ const tr = {
   priceUpdateFailed: '⚠ Fiyat güncellenemedi',
   priceUpdatePartial: '⚠ Bazı fiyatlar güncellenemedi',
   priceUpdateToastMsg: 'Fiyatlar güncellenemedi — borsa kapalı olabilir. Değerleri manuel güncelleyebilirsiniz.',
+  pricesStale: '⚠ Fiyatlar eski',
 
   // Asset fields
   payAdedi: 'Pay Adedi',
@@ -205,6 +206,7 @@ const en: typeof tr = {
   priceUpdateFailed: '⚠ Price update failed',
   priceUpdatePartial: '⚠ Some prices unavailable',
   priceUpdateToastMsg: 'Prices could not be updated — market may be closed. You can update values manually.',
+  pricesStale: '⚠ Prices outdated',
 
   // Asset fields
   payAdedi: 'Units',

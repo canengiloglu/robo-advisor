@@ -47,24 +47,51 @@ function HealthPill({ score }: { score: number }) {
   );
 }
 
-function LastUpdatedHeader({ ts }: { ts: number }) {
+function PriceStatusBadge({
+  status,
+  lastUpdated,
+}: {
+  status: 'idle' | 'success' | 'partial' | 'failed'
+  lastUpdated: number | null
+}) {
   const t = useT();
-  const { days, stale } = formatAge(ts);
-  const label = days === 0 ? t.today : t.daysAgo(days);
+
+  let label: string
+  let color: string
+  let bg: string
+  let border: string
+
+  if (status === 'success') {
+    label = t.priceUpdateSuccess
+    color = '#4ADE80'; bg = 'rgba(74,222,128,0.08)'; border = 'rgba(74,222,128,0.15)'
+  } else if (status === 'partial') {
+    label = t.priceUpdatePartial
+    color = '#FBBF24'; bg = 'rgba(251,191,36,0.08)'; border = 'rgba(251,191,36,0.25)'
+  } else if (status === 'failed') {
+    label = t.priceUpdateFailed
+    color = '#FBBF24'; bg = 'rgba(251,191,36,0.08)'; border = 'rgba(251,191,36,0.25)'
+  } else {
+    // idle — API henüz çağrılmadı, lastUpdated'a bak
+    if (!lastUpdated) return null
+    const { days, stale } = formatAge(lastUpdated)
+    if (stale) {
+      label = t.pricesStale
+      color = '#FBBF24'; bg = 'rgba(251,191,36,0.08)'; border = 'rgba(251,191,36,0.25)'
+    } else {
+      const relTime = days === 0 ? t.today : t.daysAgo(days)
+      label = `↻ ${t.lastUpdateLabel} ${relTime}`
+      color = '#818CF8'; bg = 'rgba(99,102,241,0.08)'; border = 'rgba(99,102,241,0.18)'
+    }
+  }
+
   return (
     <span
       className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium"
-      style={{
-        fontSize: 10,
-        letterSpacing: '0.5px',
-        color: stale ? '#FBBF24' : '#4ADE80',
-        background: stale ? 'rgba(251,191,36,0.08)' : 'rgba(74,222,128,0.08)',
-        border: `1px solid ${stale ? 'rgba(251,191,36,0.25)' : 'rgba(74,222,128,0.15)'}`,
-      }}
+      style={{ fontSize: 10, letterSpacing: '0.5px', color, background: bg, border: `1px solid ${border}` }}
     >
-      {stale ? '⚠' : '↻'} {t.lastUpdateLabel} {label}
+      {label}
     </span>
-  );
+  )
 }
 
 function lastUpdatedTs(assets: StoredAsset[]): number | null {
@@ -161,17 +188,7 @@ export function Dashboard() {
 
           {/* Sağ: Badge + toggles + reset */}
           <div className="flex items-center gap-2">
-            {lastUpdated && <LastUpdatedHeader ts={lastUpdated} />}
-            {(() => { const d = new Date().getDay(); return d >= 1 && d <= 5; })() && priceUpdateStatus === 'success' && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#4ADE80', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)' }}>
-                {t.priceUpdateSuccess}
-              </span>
-            )}
-            {(() => { const d = new Date().getDay(); return d >= 1 && d <= 5; })() && (priceUpdateStatus === 'failed' || priceUpdateStatus === 'partial') && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" style={{ fontSize: 10, letterSpacing: '0.5px', color: '#FBBF24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                {priceUpdateStatus === 'failed' ? t.priceUpdateFailed : t.priceUpdatePartial}
-              </span>
-            )}
+            <PriceStatusBadge status={priceUpdateStatus} lastUpdated={lastUpdated} />
             <span
               className="inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1"
               style={{

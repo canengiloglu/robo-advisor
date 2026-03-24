@@ -136,7 +136,7 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
     { label: t.target,      align: 'center', hideOnMobile: false, sortKey: 'targetWeight' },
     { label: t.payAdedi,    align: 'right',  hideOnMobile: true,  sortKey: 'units'        },
     { label: t.valueTL,     align: 'right',  hideOnMobile: false, sortKey: 'currentValue' },
-    { label: t.lastUpdate,  align: 'right',  hideOnMobile: true,  sortKey: 'lastUpdated'  },
+    { label: t.lastUpdate,  align: 'right',  hideOnMobile: true                           },
     { label: '',            align: 'left',   hideOnMobile: true                           },
   ];
 
