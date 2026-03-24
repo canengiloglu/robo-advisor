@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { usePortfolioStore } from '../../store/portfolioStore';
 import type { StoredAsset } from '../../store/portfolioStore';
@@ -25,6 +25,8 @@ function computeTotal(assets: StoredAsset[], drafts: Record<string, string>) {
   }, 0);
 }
 
+type SortKey = 'symbol' | 'name' | 'targetWeight' | 'units' | 'currentValue' | 'currentWeight' | 'lastUpdated'
+
 export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
   const { assets, updateAssetValue, updateAssetUnits, removeAsset, updateTargetWeight } = usePortfolioStore();
   const total = assets.reduce((sum, a) => sum + a.current_value, 0);
@@ -37,6 +39,43 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
   const [bulkMode, setBulkMode]     = useState(false);
   const [drafts, setDrafts]         = useState<Record<string, string>>({});
   const editCancelledRef            = useRef(false);
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' } | null>(null);
+
+  const getSortValue = (asset: StoredAsset, key: SortKey): string | number => {
+    switch (key) {
+      case 'symbol':        return asset.symbol
+      case 'name':          return asset.name
+      case 'targetWeight':  return asset.target_weight
+      case 'units':         return asset.units ?? 0
+      case 'currentValue':  return asset.current_value
+      case 'currentWeight': return total > 0 ? asset.current_value / total : 0
+      case 'lastUpdated':   return asset.lastUpdated ?? 0
+    }
+  }
+
+  const sortedAssets = useMemo(() => {
+    if (!sortConfig) return assets
+    return [...assets].sort((a, b) => {
+      const aVal = getSortValue(a, sortConfig.key)
+      const bVal = getSortValue(b, sortConfig.key)
+      if (typeof aVal === 'string') {
+        return sortConfig.direction === 'asc'
+          ? aVal.localeCompare(bVal as string, 'tr')
+          : (bVal as string).localeCompare(aVal, 'tr')
+      }
+      return sortConfig.direction === 'asc'
+        ? (aVal as number) - (bVal as number)
+        : (bVal as number) - (aVal as number)
+    })
+  }, [assets, sortConfig, total]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSort = (key: SortKey) => {
+    setSortConfig(prev => {
+      if (!prev || prev.key !== key) return { key, direction: 'desc' }
+      if (prev.direction === 'desc') return { key, direction: 'asc' }
+      return null
+    })
+  }
 
   const getWeightStatus = (total: number): WeightStatus => {
     if (Math.abs(total - 100) < 0.05) return { type: 'ok',     message: t.weightOk(total) };
@@ -91,14 +130,14 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
   const inlineStatus = editingId ? activeStatus : null;
   const bulkStatus   = bulkMode  ? activeStatus : null;
 
-  const HEADERS = [
-    { label: t.symbol,      align: 'left',   hideOnMobile: false },
-    { label: t.asset,       align: 'left',   hideOnMobile: false },
-    { label: t.target,      align: 'center', hideOnMobile: false },
-    { label: t.payAdedi,    align: 'right',  hideOnMobile: true  },
-    { label: t.valueTL,     align: 'right',  hideOnMobile: false },
-    { label: t.lastUpdate,  align: 'right',  hideOnMobile: true  },
-    { label: '',            align: 'left',   hideOnMobile: true  },
+  const HEADERS: { label: string; align: string; hideOnMobile: boolean; sortKey?: SortKey }[] = [
+    { label: t.symbol,      align: 'left',   hideOnMobile: false, sortKey: 'symbol'       },
+    { label: t.asset,       align: 'left',   hideOnMobile: false                          },
+    { label: t.target,      align: 'center', hideOnMobile: false, sortKey: 'targetWeight' },
+    { label: t.payAdedi,    align: 'right',  hideOnMobile: true,  sortKey: 'units'        },
+    { label: t.valueTL,     align: 'right',  hideOnMobile: false, sortKey: 'currentValue' },
+    { label: t.lastUpdate,  align: 'right',  hideOnMobile: true,  sortKey: 'lastUpdated'  },
+    { label: '',            align: 'left',   hideOnMobile: true                           },
   ];
 
   return (
@@ -162,19 +201,42 @@ export function PortfolioTable({ onAddClick }: { onAddClick: () => void }) {
           borderBottom: `1px solid ${c.borderVerySubtle}`,
         }}
       >
-        {HEADERS.filter((h) => !isMobile || !h.hideOnMobile).map((h, i) => (
-          <span
-            key={i}
-            className="ds-label"
-            style={{ textAlign: h.align as React.CSSProperties['textAlign'] }}
-          >
-            {h.label}
-          </span>
-        ))}
+        {HEADERS.filter((h) => !isMobile || !h.hideOnMobile).map((h, i) => {
+          const isActive = sortConfig?.key === h.sortKey
+          const icon = isActive
+            ? (sortConfig?.direction === 'desc' ? ' ↓' : ' ↑')
+            : null
+          return h.sortKey ? (
+            <span
+              key={i}
+              className="ds-label select-none"
+              style={{
+                textAlign: h.align as React.CSSProperties['textAlign'],
+                cursor: 'pointer',
+                color: isActive ? '#A5B4FC' : undefined,
+                userSelect: 'none',
+              }}
+              onClick={() => handleSort(h.sortKey!)}
+              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = '#818CF8' }}
+              onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = '' }}
+            >
+              {h.label}
+              {icon && <span style={{ fontSize: 10, opacity: 0.7 }}>{icon}</span>}
+            </span>
+          ) : (
+            <span
+              key={i}
+              className="ds-label"
+              style={{ textAlign: h.align as React.CSSProperties['textAlign'] }}
+            >
+              {h.label}
+            </span>
+          )
+        })}
       </div>
 
       {/* Rows */}
-      {assets.map((asset) => {
+      {sortedAssets.map((asset) => {
         const isEditing = bulkMode || editingId === asset.id;
         const draft     = drafts[asset.id] ?? (asset.target_weight * 100).toString();
         const status    = (editingId === asset.id && !bulkMode) ? inlineStatus : null;
