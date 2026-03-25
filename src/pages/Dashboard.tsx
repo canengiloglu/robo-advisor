@@ -87,7 +87,12 @@ function PriceStatusBadge({
   return (
     <span
       className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium"
-      style={{ fontSize: 10, letterSpacing: '0.5px', color, background: bg, border: `1px solid ${border}` }}
+      style={{ fontSize: 10, letterSpacing: '0.5px', color, background: bg, border: `1px solid ${border}`, cursor: 'pointer' }}
+      title="Tıkla → fiyatları yenile"
+      onClick={() => {
+        localStorage.removeItem('tefas-last-price-update')
+        window.location.reload()
+      }}
     >
       {label}
     </span>

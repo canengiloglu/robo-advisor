@@ -147,9 +147,14 @@ export const usePortfolioStore = create<PortfolioStore>()(
 
       updateAssetUnits: (id, units) => {
         set((state) => ({
-          assets: state.assets.map((a) =>
-            a.id === id ? { ...a, units } : a
-          ),
+          assets: state.assets.map((a) => {
+            if (a.id !== id) return a
+            // unitPrice varsa değeri otomatik hesapla
+            const newValue = (units && a.unitPrice)
+              ? Math.round(units * a.unitPrice * 100) / 100
+              : a.current_value
+            return { ...a, units, current_value: newValue, lastUpdated: Date.now() }
+          }),
         }));
         const s = get();
         syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
