@@ -51,6 +51,7 @@ interface PortfolioStore {
   updateAssetValue: (id: string, value: number) => void;
   updateAssetUnits: (id: string, units: number | null) => void;
   updateUnitPrice: (id: string, price: number) => void;
+  updateAssetPriceData: (id: string, unitPrice: number, totalValue: number) => void;
   addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number, units?: number | null) => void;
   removeAsset: (id: string) => void;
   updateTargetWeight: (id: string, weight: number) => void;
@@ -166,6 +167,19 @@ export const usePortfolioStore = create<PortfolioStore>()(
             a.id === id ? { ...a, unit_price: price } : a
           ),
         }));
+      },
+
+      updateAssetPriceData: (id, unitPrice, totalValue) => {
+        set((state) => ({
+          assets: state.assets.map((a) =>
+            a.id === id
+              ? { ...a, unit_price: unitPrice, current_value: totalValue, lastUpdated: Date.now() }
+              : a
+          ),
+          lastResult: null,
+        }));
+        const s = get();
+        syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
       },
 
       runRebalance: (cash) => {

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { usePortfolioStore } from '../store/portfolioStore'
 
 export function useDailyPriceUpdate() {
-  const { assets, updateAssetValue, updateUnitPrice } = usePortfolioStore()
+  const { assets, updateAssetPriceData } = usePortfolioStore()
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
@@ -28,8 +28,7 @@ export function useDailyPriceUpdate() {
         assets.forEach(asset => {
           const price = json.data[asset.symbol]
           if (price && asset.units && asset.units > 0) {
-            updateAssetValue(asset.id, price * asset.units)
-            updateUnitPrice(asset.id, price)
+            updateAssetPriceData(asset.id, price, price * asset.units)
             updatedCount++
           }
         })
