@@ -1,43 +1,43 @@
 import { useEffect } from 'react'
 import { usePortfolioStore } from '../store/portfolioStore'
-import { fetchFonPrices } from '../lib/tefasApi'
 
 export function useDailyPriceUpdate() {
-  const { assets, updateAssetValue, updateUnitPrice, lastPriceUpdate, setLastPriceUpdate, setPriceUpdateStatus } = usePortfolioStore()
+  const { assets, updateAssetValue, updateUnitPrice } = usePortfolioStore()
 
   useEffect(() => {
-    const now = new Date()
-    const day = now.getDay()
-    if (day === 0 || day === 6) return // Hafta sonu — sessizce atla
+    const today = new Date().toISOString().split('T')[0]
+    const lastUpdate = localStorage.getItem('tefas-last-price-update')
 
-    const today = now.toDateString()
-    if (lastPriceUpdate === today) return // Bugün zaten güncellendi
+    if (lastUpdate === today) {
+      console.log('Fiyatlar bugün zaten güncellendi, skip.')
+      return  // ← BU SATIR KRİTİK — fetch'e gitmeden çık
+    }
 
-    const assetsWithUnits = assets.filter(a => a.units)
-    if (assetsWithUnits.length === 0) return // Birim sayısı girilmemiş varlık yok
+    const fonCodes = assets
+      .filter(a => a.units && a.units > 0)
+      .map(a => a.symbol)
 
-    const fonCodes = assetsWithUnits.map(a => a.symbol)
+    if (fonCodes.length === 0) return
 
-    fetchFonPrices(fonCodes).then(prices => {
-      let successCount = 0
-      assetsWithUnits.forEach(asset => {
-        const price = prices[asset.symbol]
-        if (price && asset.units) {
-          updateAssetValue(asset.id, price * asset.units)
-          updateUnitPrice(asset.id, price)
-          successCount++
+    fetch(`/api/tefas?codes=${fonCodes.join(',')}`)
+      .then(res => res.json())
+      .then(json => {
+        if (!json.data) return
+
+        let updatedCount = 0
+        assets.forEach(asset => {
+          const price = json.data[asset.symbol]
+          if (price && asset.units && asset.units > 0) {
+            updateAssetValue(asset.id, price * asset.units)
+            updateUnitPrice(asset.id, price)
+            updatedCount++
+          }
+        })
+
+        if (updatedCount > 0) {
+          localStorage.setItem('tefas-last-price-update', today)
         }
       })
-
-      if (successCount === 0) {
-        setPriceUpdateStatus('failed')
-      } else if (successCount < assetsWithUnits.length) {
-        setPriceUpdateStatus('partial')
-        setLastPriceUpdate(today)
-      } else {
-        setPriceUpdateStatus('success')
-        setLastPriceUpdate(today)
-      }
-    })
+      .catch(err => console.error('Fiyat güncelleme hatası:', err))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 }
