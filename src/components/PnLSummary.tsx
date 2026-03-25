@@ -7,10 +7,19 @@ import { fmtTL } from '../lib/format'
 
 type Period = 'daily' | 'weekly' | 'monthly'
 
+function pnlColor(amount: number) {
+  if (amount > 0) return '#4ADE80'
+  if (amount < 0) return '#EF4444'
+  return '#94A3B8'
+}
+
+function pnlSign(amount: number) {
+  return amount > 0 ? '+' : ''
+}
+
 function PnLValue({ amount, percent }: { amount: number; percent: number }) {
-  const positive = amount >= 0
-  const color = positive ? '#4ADE80' : '#EF4444'
-  const sign = positive ? '+' : ''
+  const color = pnlColor(amount)
+  const sign = pnlSign(amount)
   return (
     <span style={{ color }} className="font-mono tabular-nums">
       {sign}{fmtTL(amount)}

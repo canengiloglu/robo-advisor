@@ -15,16 +15,35 @@ import { Sun, Moon } from 'lucide-react'
 
 type DayRange = 7 | 30 | 90 | 999
 
+function pnlColor(amount: number) {
+  if (amount > 0) return '#4ADE80'
+  if (amount < 0) return '#EF4444'
+  return '#94A3B8'
+}
+
+function pnlBg(amount: number) {
+  if (amount > 0) return 'rgba(74,222,128,0.06)'
+  if (amount < 0) return 'rgba(239,68,68,0.06)'
+  return 'rgba(100,116,139,0.06)'
+}
+
+function pnlBorder(amount: number) {
+  if (amount > 0) return 'rgba(74,222,128,0.15)'
+  if (amount < 0) return 'rgba(239,68,68,0.15)'
+  return 'rgba(100,116,139,0.15)'
+}
+
+function pnlSign(amount: number) {
+  return amount > 0 ? '+' : ''
+}
+
 function PnLBadge({ amount, percent, label }: { amount: number; percent: number; label: string }) {
-  const positive = amount >= 0
-  const color = positive ? '#4ADE80' : '#EF4444'
-  const bg = positive ? 'rgba(74,222,128,0.06)' : 'rgba(239,68,68,0.06)'
-  const border = positive ? 'rgba(74,222,128,0.15)' : 'rgba(239,68,68,0.15)'
-  const sign = positive ? '+' : ''
+  const color = pnlColor(amount)
+  const sign = pnlSign(amount)
   return (
     <div
       className="rounded-2xl p-4 flex flex-col gap-1"
-      style={{ background: bg, border: `1px solid ${border}` }}
+      style={{ background: pnlBg(amount), border: `1px solid ${pnlBorder(amount)}` }}
     >
       <p className="text-xs font-medium" style={{ color: '#64748B' }}>{label}</p>
       <p className="font-mono tabular-nums font-bold text-lg leading-tight" style={{ color }}>
@@ -270,14 +289,13 @@ export function Analytics() {
                   </thead>
                   <tbody>
                     {sortedAssets.map((a, i) => {
-                      const positive = a.pnl.amount >= 0
                       const rowBg = a.pnl.amount > 0.5
                         ? 'rgba(74,222,128,0.03)'
                         : a.pnl.amount < -0.5
                         ? 'rgba(239,68,68,0.03)'
                         : 'transparent'
-                      const pnlColor = positive ? '#4ADE80' : '#EF4444'
-                      const sign = positive ? '+' : ''
+                      const color = pnlColor(a.pnl.amount)
+                      const sign = pnlSign(a.pnl.amount)
                       const firstSnap = allSnapshots[0]
                       const startVal = firstSnap?.assets_data[a.symbol]?.value ?? 0
                       return (
@@ -296,10 +314,10 @@ export function Analytics() {
                           <td className="px-4 py-3 text-right font-mono tabular-nums text-xs" style={{ color: c.textPrimary }}>
                             {fmtTL(a.current_value)}
                           </td>
-                          <td className="px-5 py-3 text-right font-mono tabular-nums text-xs font-semibold" style={{ color: pnlColor }}>
+                          <td className="px-5 py-3 text-right font-mono tabular-nums text-xs font-semibold" style={{ color: color }}>
                             {sign}{fmtTL(a.pnl.amount)}
                           </td>
-                          <td className="px-5 py-3 text-right font-mono tabular-nums text-xs font-semibold" style={{ color: pnlColor }}>
+                          <td className="px-5 py-3 text-right font-mono tabular-nums text-xs font-semibold" style={{ color: color }}>
                             {sign}{a.pnl.percent.toFixed(2)}%
                           </td>
                         </tr>
