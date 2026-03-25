@@ -31,6 +31,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const url = `https://tefas-api.p.rapidapi.com/api/v1/fund-info/by-date?fundCodes=${codes}&date=${dateStr}&limit=10`
 
     console.log('Fetching RapidAPI:', url)
+    console.log('RAPIDAPI_KEY exists:', !!process.env.RAPIDAPI_KEY)
+    console.log('RAPIDAPI_KEY length:', process.env.RAPIDAPI_KEY?.length || 0)
 
     const response = await fetch(url, {
       headers: {
@@ -40,7 +42,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     })
 
-    const json = await response.json()
+    const responseText = await response.text()
+    console.log('Raw API response:', responseText.substring(0, 300))
+
+    // Sonra parse et
+    const json = JSON.parse(responseText)
     console.log('RapidAPI response success:', json.success)
 
     if (!json.success || !json.data) {
