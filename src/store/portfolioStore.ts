@@ -20,7 +20,7 @@ export interface RebalanceRecord {
 export interface StoredAsset extends Asset {
   lastUpdated?: number; // Unix timestamp (ms)
   units?: number | null; // Birim sayısı (otomatik fiyat güncellemesi için)
-  unitPrice?: number | null; // Son bilinen birim fiyat (TEFAS'tan)
+  unit_price?: number | null; // Son bilinen birim fiyat (TEFAS'tan)
 }
 
 // Gerçek portföy verisi (Mart 2026)
@@ -149,9 +149,9 @@ export const usePortfolioStore = create<PortfolioStore>()(
         set((state) => ({
           assets: state.assets.map((a) => {
             if (a.id !== id) return a
-            // unitPrice varsa değeri otomatik hesapla
-            const newValue = (units && a.unitPrice)
-              ? Math.round(units * a.unitPrice * 100) / 100
+            // unit_price varsa değeri otomatik hesapla
+            const newValue = (units && a.unit_price)
+              ? Math.round(units * a.unit_price * 100) / 100
               : a.current_value
             return { ...a, units, current_value: newValue, lastUpdated: Date.now() }
           }),
@@ -163,7 +163,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       updateUnitPrice: (id, price) => {
         set((state) => ({
           assets: state.assets.map((a) =>
-            a.id === id ? { ...a, unitPrice: price } : a
+            a.id === id ? { ...a, unit_price: price } : a
           ),
         }));
       },

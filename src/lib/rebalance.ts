@@ -7,7 +7,7 @@ export interface Asset {
   name: string;
   target_weight: number; // 0..1 arası oran (örn. 0.50)
   current_value: number; // TL cinsinden güncel değer
-  unitPrice?: number | null; // birim fiyat (TEFAS'tan)
+  unit_price?: number | null; // birim fiyat (TEFAS'tan)
 }
 
 export interface RebalanceResult {
@@ -21,7 +21,7 @@ export interface RebalanceResult {
   current_weight: number; // mevcut ağırlık (%)
   target_weight: number;  // hedef ağırlık (%)
   new_weight: number;     // alım sonrası ağırlık (%)
-  // Pay bazlı hesap (unitPrice varsa dolu, yoksa null)
+  // Pay bazlı hesap (unit_price varsa dolu, yoksa null)
   buyableUnits: number | null;
   actualCost: number;     // gerçek harcama (yuvarlanmış)
   remainder: number;      // allocation - actualCost (yuvarlanmadan kalan)
@@ -94,8 +94,8 @@ export function rebalance(assets: Asset[], cashToAdd: number): RebalanceSummary 
 
     const newValue = asset.current_value + allocation;
 
-    // Pay bazlı hesap: unitPrice varsa tam pay sayısını hesapla
-    const up = asset.unitPrice ?? null;
+    // Pay bazlı hesap: unit_price varsa tam pay sayısını hesapla
+    const up = asset.unit_price ?? null;
     const buyableUnits = up && up > 0 ? Math.floor(allocation / up) : null;
     const actualCost = buyableUnits !== null && up ? buyableUnits * up : allocation;
     const remainder = allocation - actualCost;
