@@ -3,7 +3,7 @@ import { usePortfolioStore } from '../store/portfolioStore'
 import { fetchFonPrices } from '../lib/tefasApi'
 
 export function useDailyPriceUpdate() {
-  const { assets, updateAssetValue, lastPriceUpdate, setLastPriceUpdate, setPriceUpdateStatus } = usePortfolioStore()
+  const { assets, updateAssetValue, updateUnitPrice, lastPriceUpdate, setLastPriceUpdate, setPriceUpdateStatus } = usePortfolioStore()
 
   useEffect(() => {
     const now = new Date()
@@ -24,6 +24,7 @@ export function useDailyPriceUpdate() {
         const price = prices[asset.symbol]
         if (price && asset.units) {
           updateAssetValue(asset.id, price * asset.units)
+          updateUnitPrice(asset.id, price)
           successCount++
         }
       })

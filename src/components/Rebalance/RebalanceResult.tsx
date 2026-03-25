@@ -3,6 +3,10 @@ import { fmtTL, pct } from '../../lib/format';
 import { useT } from '../../hooks/useT';
 import { useThemeColors } from '../../hooks/useThemeColors';
 
+function fmtUnit(n: number): string {
+  return new Intl.NumberFormat('tr-TR').format(n);
+}
+
 interface Props {
   result: RebalanceSummary;
 }
@@ -10,6 +14,9 @@ interface Props {
 export function RebalanceResult({ result }: Props) {
   const t = useT();
   const c = useThemeColors();
+
+  const totalRemainder = result.results.reduce((sum, r) => sum + r.remainder, 0);
+  const hasUnitData = result.results.some((r) => r.buyableUnits !== null && r.allocation > 0);
 
   return (
     <div className="space-y-5 mt-6 pt-6" style={{ borderTop: `1px solid ${c.border}` }}>
@@ -63,12 +70,26 @@ export function RebalanceResult({ result }: Props) {
 
                 <td className="py-3 px-4 text-right">
                   {r.allocation > 0 ? (
-                    <span
-                      className="inline-block tabular-nums font-mono text-xs font-semibold px-2.5 py-1 rounded-lg"
-                      style={{ color: '#4ADE80', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)' }}
-                    >
-                      +{fmtTL(r.allocation)}
-                    </span>
+                    r.buyableUnits !== null && r.buyableUnits > 0 ? (
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="tabular-nums font-mono text-xs" style={{ color: c.textPrimary }}>
+                          {fmtUnit(r.buyableUnits)} pay × {fmtTL(r.actualCost / r.buyableUnits)}{' '}
+                          <span className="font-semibold" style={{ color: '#4ADE80' }}>= {fmtTL(r.actualCost)}</span>
+                        </span>
+                        {r.remainder > 0.005 && (
+                          <span className="tabular-nums font-mono text-xs" style={{ color: '#F59E0B' }}>
+                            Kalan: {fmtTL(r.remainder)}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span
+                        className="inline-block tabular-nums font-mono text-xs font-semibold px-2.5 py-1 rounded-lg"
+                        style={{ color: '#4ADE80', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.15)' }}
+                      >
+                        +{fmtTL(r.allocation)}
+                      </span>
+                    )
                   ) : (
                     <span style={{ color: c.textDisabled }}>—</span>
                   )}
@@ -82,6 +103,16 @@ export function RebalanceResult({ result }: Props) {
           </tbody>
         </table>
       </div>
+
+      {hasUnitData && totalRemainder > 0.005 && (
+        <div className="flex items-start gap-2.5 rounded-xl px-4 py-3" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.20)' }}>
+          <span className="mt-0.5 text-base leading-none" style={{ color: '#F59E0B' }}>⚠</span>
+          <p className="text-sm" style={{ color: 'rgba(245,158,11,0.9)' }}>
+            {t.roundingRemainder}{' '}
+            <span className="font-semibold font-mono tabular-nums">{fmtTL(totalRemainder)}</span>
+          </p>
+        </div>
+      )}
 
       {result.unallocated > 0.01 && (
         <div className="flex items-start gap-2.5 rounded-xl px-4 py-3" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>

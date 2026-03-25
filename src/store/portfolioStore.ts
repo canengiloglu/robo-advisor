@@ -20,6 +20,7 @@ export interface RebalanceRecord {
 export interface StoredAsset extends Asset {
   lastUpdated?: number; // Unix timestamp (ms)
   units?: number | null; // Birim sayısı (otomatik fiyat güncellemesi için)
+  unitPrice?: number | null; // Son bilinen birim fiyat (TEFAS'tan)
 }
 
 // Gerçek portföy verisi (Mart 2026)
@@ -49,6 +50,7 @@ interface PortfolioStore {
   setStoreFromSupabase: (data: { assets: StoredAsset[]; history: RebalanceRecord[]; monthlyAdded: number; monthlyAddedMonth: string; lastPriceUpdate: string | null }) => void;
   updateAssetValue: (id: string, value: number) => void;
   updateAssetUnits: (id: string, units: number | null) => void;
+  updateUnitPrice: (id: string, price: number) => void;
   addAsset: (symbol: string, name: string, targetWeight: number, currentValue: number, units?: number | null) => void;
   removeAsset: (id: string) => void;
   updateTargetWeight: (id: string, weight: number) => void;
@@ -151,6 +153,14 @@ export const usePortfolioStore = create<PortfolioStore>()(
         }));
         const s = get();
         syncToSupabase({ assets: s.assets, history: s.history, monthlyAdded: s.monthlyAdded, monthlyAddedMonth: s.monthlyAddedMonth, lastPriceUpdate: s.lastPriceUpdate }).catch(console.error);
+      },
+
+      updateUnitPrice: (id, price) => {
+        set((state) => ({
+          assets: state.assets.map((a) =>
+            a.id === id ? { ...a, unitPrice: price } : a
+          ),
+        }));
       },
 
       runRebalance: (cash) => {

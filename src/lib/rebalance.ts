@@ -7,6 +7,7 @@ export interface Asset {
   name: string;
   target_weight: number; // 0..1 arası oran (örn. 0.50)
   current_value: number; // TL cinsinden güncel değer
+  unitPrice?: number | null; // birim fiyat (TEFAS'tan)
 }
 
 export interface RebalanceResult {
@@ -14,12 +15,16 @@ export interface RebalanceResult {
   name: string;
   current_value: number;
   ideal_value: number;
-  deficit: number;       // idealDeger - mevcutDeger (negatifse 0)
-  allocation: number;    // bu varlığa tahsis edilen nakit miktarı
-  new_value: number;     // alımdan sonraki değer
+  deficit: number;        // idealDeger - mevcutDeger (negatifse 0)
+  allocation: number;     // bu varlığa tahsis edilen nakit miktarı
+  new_value: number;      // alımdan sonraki değer
   current_weight: number; // mevcut ağırlık (%)
   target_weight: number;  // hedef ağırlık (%)
   new_weight: number;     // alım sonrası ağırlık (%)
+  // Pay bazlı hesap (unitPrice varsa dolu, yoksa null)
+  buyableUnits: number | null;
+  actualCost: number;     // gerçek harcama (yuvarlanmış)
+  remainder: number;      // allocation - actualCost (yuvarlanmadan kalan)
 }
 
 export interface RebalanceSummary {
@@ -56,6 +61,9 @@ export function rebalance(assets: Asset[], cashToAdd: number): RebalanceSummary 
         current_weight: 0,
         target_weight: a.target_weight,
         new_weight: 0,
+        buyableUnits: null,
+        actualCost: 0,
+        remainder: 0,
       })),
       unallocated: cashToAdd,
     };
@@ -86,6 +94,12 @@ export function rebalance(assets: Asset[], cashToAdd: number): RebalanceSummary 
 
     const newValue = asset.current_value + allocation;
 
+    // Pay bazlı hesap: unitPrice varsa tam pay sayısını hesapla
+    const up = asset.unitPrice ?? null;
+    const buyableUnits = up && up > 0 ? Math.floor(allocation / up) : null;
+    const actualCost = buyableUnits !== null && up ? buyableUnits * up : allocation;
+    const remainder = allocation - actualCost;
+
     return {
       symbol: asset.symbol,
       name: asset.name,
@@ -97,6 +111,9 @@ export function rebalance(assets: Asset[], cashToAdd: number): RebalanceSummary 
       current_weight: totalBefore > 0 ? (asset.current_value / totalBefore) * 100 : 0,
       target_weight: asset.target_weight * 100,
       new_weight: newTotal > 0 ? (newValue / newTotal) * 100 : 0,
+      buyableUnits,
+      actualCost,
+      remainder,
     };
   });
 

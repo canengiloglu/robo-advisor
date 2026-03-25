@@ -83,6 +83,7 @@ const tr = {
   newWeight: 'Yeni Ağırlık',
   unallocatedPrefix: 'Dağıtılamayan nakit:',
   allOverweight: '— tüm varlıklar hedef ağırlığını aştı.',
+  roundingRemainder: 'Dağıtılamayan nakit (yuvarlanma):',
 
   // Add asset modal
   addNewAsset: 'Yeni Varlık Ekle',
@@ -190,6 +191,7 @@ const en: typeof tr = {
   newWeight: 'New Weight',
   unallocatedPrefix: 'Unallocated cash:',
   allOverweight: '— all assets exceeded target weight.',
+  roundingRemainder: 'Undistributed cash (rounding):',
 
   addNewAsset: 'Add New Asset',
   assetName: 'Asset Name',
