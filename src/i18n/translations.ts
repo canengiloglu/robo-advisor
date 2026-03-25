@@ -117,6 +117,22 @@ const tr = {
   undoCancel: 'İptal',
   undoConfirm: 'Geri Al',
   undoSuccess: '↩ Son rebalance geri alındı',
+
+  // Analytics & PnL
+  analytics: 'Analiz',
+  analyticsTitle: 'Portföy Analizi',
+  daily: 'Günlük',
+  weekly: 'Haftalık',
+  monthly: 'Aylık',
+  allTime: 'Tümü',
+  sinceStart: 'Başlangıçtan beri',
+  dataAccumulating: 'Veriler birikiyor… İlk analiz yarın görünecek.',
+  loading: 'Yükleniyor…',
+  portfolioHistory: 'Portföy Geçmişi',
+  assetPerformance: 'Varlık Performansı',
+  startValue: 'Başlangıç Değeri',
+  pnlAmount: 'Kar/Zarar (₺)',
+  pnlPercent: 'Kar/Zarar (%)',
 };
 
 const en: typeof tr = {
@@ -225,6 +241,22 @@ const en: typeof tr = {
   undoCancel: 'Cancel',
   undoConfirm: 'Undo',
   undoSuccess: '↩ Last rebalance undone',
+
+  // Analytics & PnL
+  analytics: 'Analytics',
+  analyticsTitle: 'Portfolio Analytics',
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  allTime: 'All',
+  sinceStart: 'Since start',
+  dataAccumulating: 'Data accumulating… First analysis tomorrow.',
+  loading: 'Loading…',
+  portfolioHistory: 'Portfolio History',
+  assetPerformance: 'Asset Performance',
+  startValue: 'Start Value',
+  pnlAmount: 'P&L (₺)',
+  pnlPercent: 'P&L (%)',
 };
 
 export const translations = { tr, en };

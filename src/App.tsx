@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Dashboard } from './pages/Dashboard';
 import { HistoryPage } from './pages/HistoryPage';
+import { Analytics } from './pages/Analytics';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SetupPage } from './pages/SetupPage';
 import { useSettingsStore } from './store/settingsStore';
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/setup" element={<SetupPage onComplete={() => setOnboardingDone(true)} />} />
         <Route path="/" element={onboardingDone ? <Dashboard /> : <Navigate to="/onboarding" replace />} />
         <Route path="/history" element={onboardingDone ? <HistoryPage /> : <Navigate to="/onboarding" replace />} />
+        <Route path="/analytics" element={onboardingDone ? <Analytics /> : <Navigate to="/onboarding" replace />} />
       </Routes>
     </BrowserRouter>
   );

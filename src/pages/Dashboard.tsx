@@ -14,6 +14,7 @@ import { RebalancePanel } from '../components/Rebalance/RebalancePanel';
 import { AllocationPieChart } from '../components/Charts/AllocationPieChart';
 import { fmtTL, formatAge } from '../lib/format'
 import { useDailyPriceUpdate } from '../hooks/useDailyPriceUpdate';
+import { PnLSummary } from '../components/PnLSummary';
 
 function computeHealth(assets: StoredAsset[], total: number): number | null {
   if (total === 0) return null;
@@ -252,6 +253,9 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 md:px-9 py-5 md:py-7 space-y-3 md:space-y-4">
+
+        {/* ── Kar/Zarar Özeti ── */}
+        <PnLSummary />
 
         {/* ── İstatistik Kartları ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">

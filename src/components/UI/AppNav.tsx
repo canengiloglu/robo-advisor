@@ -6,8 +6,9 @@ export function AppNav() {
   const t = useT();
 
   const LINKS = [
-    { to: '/',        label: t.panel },
-    { to: '/history', label: t.history },
+    { to: '/',          label: t.panel },
+    { to: '/history',   label: t.history },
+    { to: '/analytics', label: t.analytics },
   ];
 
   return (

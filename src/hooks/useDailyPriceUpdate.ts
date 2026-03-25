@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { usePortfolioStore } from '../store/portfolioStore'
+import { saveDailySnapshot } from '../lib/snapshotService'
 
 export function useDailyPriceUpdate() {
   const { assets, updateAssetPriceData } = usePortfolioStore()
@@ -35,6 +36,11 @@ export function useDailyPriceUpdate() {
 
         if (updatedCount > 0) {
           localStorage.setItem('tefas-last-price-update', today)
+
+          // Günlük snapshot kaydet
+          const state = usePortfolioStore.getState()
+          const snapshotTotal = state.assets.reduce((sum, a) => sum + (a.current_value || 0), 0)
+          saveDailySnapshot('default', snapshotTotal, state.assets)
         }
       })
       .catch(err => console.error('Fiyat güncelleme hatası:', err))
