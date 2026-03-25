@@ -34,8 +34,13 @@ export function PnLSummary() {
   useEffect(() => {
     setLoading(true)
     getSnapshots('default', 90).then(snapshots => {
+      console.log('Snapshots loaded:', snapshots)
+      console.log('Snapshot count:', snapshots.length)
       const result = calculatePnL(snapshots, total, assets)
       setPnl(result)
+      setLoading(false)
+    }).catch(err => {
+      console.error('Snapshot error:', err)
       setLoading(false)
     })
   }, [total]) // eslint-disable-line react-hooks/exhaustive-deps

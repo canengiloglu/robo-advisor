@@ -55,6 +55,8 @@ export async function getSnapshots(
     .gte('date', startDate.toISOString().split('T')[0])
     .order('date', { ascending: true })
 
+  console.log('Supabase snapshots response:', { data, error })
+
   if (error) {
     console.error('Snapshot çekme hatası:', error)
     return []

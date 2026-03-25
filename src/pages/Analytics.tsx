@@ -78,8 +78,13 @@ export function Analytics() {
 
   useEffect(() => {
     getSnapshots('default', 365).then(snaps => {
+      console.log('Snapshots loaded:', snaps)
+      console.log('Snapshot count:', snaps.length)
       setAllSnapshots(snaps)
       setPnl(calculatePnL(snaps, total, assets))
+      setLoading(false)
+    }).catch(err => {
+      console.error('Snapshot error:', err)
       setLoading(false)
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
