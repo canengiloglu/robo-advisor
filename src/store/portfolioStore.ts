@@ -196,9 +196,17 @@ export const usePortfolioStore = create<PortfolioStore>()(
         const cashAmount = lastResult.cash_added;
         const updated = assets.map((a) => {
           const r = lastResult.results.find((r) => r.symbol === a.symbol);
-          return r && r.allocation > 0
-            ? { ...a, current_value: Math.round((a.current_value + r.allocation) * 100) / 100, lastUpdated: now }
-            : a;
+          if (!r || r.allocation <= 0) return a;
+          // actualCost kullan (tam pay bazlı gerçek harcama)
+          const addedValue = r.actualCost;
+          // units varsa buyableUnits kadar artır
+          const newUnits = r.buyableUnits !== null ? (a.units ?? 0) + r.buyableUnits : a.units;
+          return {
+            ...a,
+            current_value: Math.round((a.current_value + addedValue) * 100) / 100,
+            units: newUnits,
+            lastUpdated: now,
+          };
         });
         const record: RebalanceRecord = {
           id: now.toString(),

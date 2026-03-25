@@ -84,6 +84,7 @@ const tr = {
   unallocatedPrefix: 'Dağıtılamayan nakit:',
   allOverweight: '— tüm varlıklar hedef ağırlığını aştı.',
   roundingRemainder: 'Dağıtılamayan nakit (yuvarlanma):',
+  roundingRemainderToast: 'dağıtılamadı (birim fiyat bölünmesi)',
 
   // Add asset modal
   addNewAsset: 'Yeni Varlık Ekle',
@@ -192,6 +193,7 @@ const en: typeof tr = {
   unallocatedPrefix: 'Unallocated cash:',
   allOverweight: '— all assets exceeded target weight.',
   roundingRemainder: 'Undistributed cash (rounding):',
+  roundingRemainderToast: 'undistributed (unit price rounding)',
 
   addNewAsset: 'Add New Asset',
   assetName: 'Asset Name',

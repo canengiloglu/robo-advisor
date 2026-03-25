@@ -46,9 +46,13 @@ export function RebalancePanel() {
   const handleApply = () => {
     if (!lastResult) return;
     const newTotal = lastResult.total_after;
+    const totalRemainder = lastResult.results.reduce((sum, r) => sum + r.remainder, 0);
     applyRebalance();
     resetForm();
     toast.success(`${t.portfolioUpdated} ${fmtTL(newTotal)}`);
+    if (totalRemainder > 0.005) {
+      toast(`${fmtTL(totalRemainder)} ${t.roundingRemainderToast}`, { icon: '⚠️' });
+    }
   };
 
   const handleCancel = () => {
